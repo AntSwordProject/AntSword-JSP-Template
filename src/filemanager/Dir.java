@@ -3,14 +3,14 @@ import javax.servlet.ServletResponse;
 import javax.servlet.jsp.PageContext;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.util.Set;
-import java.text.SimpleDateFormat;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
+import java.text.SimpleDateFormat;
+import java.util.Set;
 
 public class Dir {
     public String encoder;
@@ -95,7 +95,7 @@ public class Dir {
         return new String(s.getBytes(fileCode), cs);
     }
 
-    String getPermissions(String sourceFile ) {
+    String getPermissions(String sourceFile) {
         int ownerPermissions = 0;
         int groupPermissions = 0;
         int othersPermissions = 0;
