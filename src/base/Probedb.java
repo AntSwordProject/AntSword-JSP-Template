@@ -32,6 +32,7 @@ public class Probedb {
     String ProbedbCode(HttpServletRequest r) {
         String[] drivers = new String[]{
                 "com.mysql.jdbc.Driver",
+                "com.mysql.cj.jdbc.Driver",
                 "oracle.jdbc.driver.OracleDriver",
                 "org.postgresql.Driver",
                 "weblogic.jdbc.mssqlserver4.Driver",

