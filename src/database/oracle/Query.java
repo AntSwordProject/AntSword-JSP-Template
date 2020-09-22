@@ -117,6 +117,23 @@ public class Query {
         return str;
     }
 
+    String Base64Encode(String str) {
+        String version = System.getProperty("java.version");
+        try {
+            if (version.compareTo("1.9") >= 0) {
+                Class Base64 = Class.forName("java.util.Base64");
+                Object Encoder = Base64.getMethod("getEncoder", new Class[0]).invoke(Base64, new Object[]{});
+                return (String) Encoder.getClass().getMethod("encodeToString", byte[].class).invoke(Encoder, str.getBytes());
+            } else {
+                Class Base64 = Class.forName("sun.misc.BASE64Encoder");
+                Object Encoder = Base64.getDeclaredConstructor().newInstance();
+                return (String) Encoder.getClass().getMethod("encode", byte[].class).invoke(Encoder, str.getBytes());
+            }
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
     String executeSQL(String encode, String conn, String sql, String columnsep, String rowsep, boolean needcoluname)
             throws Exception {
         String ret = "";
@@ -139,7 +156,7 @@ public class Query {
         while (rs.next()) {
             for (int i = 1; i <= rsmd.getColumnCount(); i++) {
                 String columnValue = rs.getString(i);
-                ret += columnValue + columnsep;
+                ret += Base64Encode(columnValue) + columnsep;
             }
             ret += rowsep;
         }
