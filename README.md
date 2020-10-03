@@ -1,4 +1,4 @@
-# AntSword-JSP-Template  v1.1
+# AntSword-JSP-Template  v1.3
 中国蚁剑JSP一句话Payload
 
 详细介绍：https://yzddmr6.tk/posts/antsword-diy-3/
@@ -19,10 +19,18 @@ base64 -w 0 Test.class > Test.txt
 
 ### 自动编译
 
-在build.py中替换你的javac路径后运行，即可在`./dist`目录下自动生成代码模板。
+在build.py/build.sh中替换你的javac路径后运行，即可在`./dist`目录下自动生成代码模板。
+
+Windows
 
 ```
 python3 build.py
+```
+
+Linux/Mac os
+
+```
+./build.sh
 ```
 
 ## Shell
@@ -60,6 +68,15 @@ python3 build.py
 其中`pageContext`可以替换为`request`或者`response`，以实现对Tomcat内存Webshell的兼容
 
 ## 更新日志
+
+### v 1.3
+
+1. 兼容SpringBoot
+
+### v 1.2
+
+1. 修复下载文件的BUG
+2. database添加Base64编码
 
 ### v 1.1
 
