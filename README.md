@@ -1,11 +1,11 @@
-# AntSword-JSP-Template  v1.3
+# AntSword-JSP-Template  v1.4
 中国蚁剑JSP一句话Payload
 
 详细介绍：https://yzddmr6.tk/posts/antsword-diy-3/
 
-编译环境：jdk7 + tomcat7
+编译环境：jdk6 + tomcat7
 
-适用范围：jdk7 - jdk14
+适用范围：jdk6及以上
 
 ## 编译
 
@@ -97,9 +97,18 @@ shell.jspx
     </jsp:scriptlet>
 </jsp:root>
 ```
-其中`pageContext`可以替换为`request`或者`response`，以实现对Tomcat内存Webshell的兼容
+其中`pageContext`可以替换为`request`，以实现对内存Webshell的兼容。
 
 ## 更新日志
+
+### v 1.4
+
+1. 兼容JDK6
+2. 兼容weblogic内存webshell
+3. 优化报错信息
+4. 解决windows下中文乱码的问题
+5. 不再支持response作为入口参数
+6. 增加用于测试的Web项目
 
 ### v 1.3
 

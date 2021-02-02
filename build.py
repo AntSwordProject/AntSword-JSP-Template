@@ -6,7 +6,7 @@ import time
 import shutil
 import subprocess
 
-javapath = r'C:\Program Files\Java\jdk1.7.0_75\bin\javac.exe'  # javac路径
+javapath = r'C:\Program Files (x86)\Java\jdk1.6.0_43\bin\javac.exe'  # javac路径
 classpath = os.getcwd()+"/lib"  # apache lib路径
 classpath = classpath+"/servlet-api.jar;" + classpath+"/jsp-api-2.1.jar"  # 拼接classpath
 if os.path.exists("./dist/"):

