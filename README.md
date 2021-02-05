@@ -11,26 +11,28 @@
 
 ### 手动编译
 
+* Windows
+
 ```
-javac -cp "D:/xxxx/lib/servlet-api.jar;D:/xxx/lib/jsp-api.jar" Test.java
+javac.exe -cp "./lib/servlet-api.jar;./lib/jsp-api.jar" Test.java
+
+base64 -w 0 Test.class > Test.txt
+```
+
+* Linux/Mac
+
+```bash
+javac -cp "./lib/servlet-api.jar:./lib/jsp-api.jar" Test.java
 
 base64 -w 0 Test.class > Test.txt
 ```
 
 ### 自动编译
 
-在build.py/build.sh中替换你的javac路径后运行，即可在`./dist`目录下自动生成代码模板。
-
-Windows
+在build.py中替换你的javac路径后运行，即可在`./dist`目录下自动生成代码模板。
 
 ```
-python3 build.py
-```
-
-Linux/Mac os
-
-```
-./build.sh
+python build.py
 ```
 
 ## Shell
