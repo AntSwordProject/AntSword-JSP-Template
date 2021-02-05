@@ -35,6 +35,8 @@ base64 -w 0 Test.class > Test.txt
 python build.py
 ```
 
+编译完成后将`./dist/`目录下所有文件拷贝至`antSword-master/source/core/jsp/template/`下即可
+
 ## Shell
 shell.jsp
 
@@ -108,9 +110,11 @@ shell.jspx
 1. 兼容JDK6
 2. 兼容weblogic内存webshell
 3. 优化报错信息
-4. 解决windows下中文乱码的问题
-5. 不再支持response作为入口参数
-6. 增加用于测试的Web项目
+4. 解决windows下中文乱码的问题（win选择GBK编码，linux选择UTF-8编码）
+5. 实战中只能获取到response的情况几乎没有，所以为了减少payload体积不再支持response作为入口参数
+6. 增加用于测试payload的Web项目
+7. 修复 java -jar xxx.war 启动时当前目录获取失败的问题
+
 
 ### v 1.3
 
