@@ -114,15 +114,18 @@ public class Query {
     String Base64Encode(String str) {
         String version = System.getProperty("java.version");
         try {
+            String ret = "";
             if (version.compareTo("1.9") >= 0) {
                 Class Base64 = Class.forName("java.util.Base64");
                 Object Encoder = Base64.getMethod("getEncoder", new Class[0]).invoke(Base64, new Object[]{});
-                return (String) Encoder.getClass().getMethod("encodeToString", byte[].class).invoke(Encoder, str.getBytes());
+                ret = (String) Encoder.getClass().getMethod("encodeToString", byte[].class).invoke(Encoder, str.getBytes());
             } else {
                 Class Base64 = Class.forName("sun.misc.BASE64Encoder");
                 Object Encoder = Base64.getDeclaredConstructor().newInstance();
-                return (String) Encoder.getClass().getMethod("encode", byte[].class).invoke(Encoder, str.getBytes());
+                ret = (String) Encoder.getClass().getMethod("encode", byte[].class).invoke(Encoder, str.getBytes());
             }
+            ret = ret.replaceAll("\r|\n", "");
+            return ret;
         } catch (Exception e) {
             return "";
         }
