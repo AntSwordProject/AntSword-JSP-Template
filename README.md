@@ -24,7 +24,11 @@ base64 -w 0 Test.class > Test.txt
 ```bash
 javac -cp "./lib/servlet-api.jar:./lib/jsp-api.jar" Test.java
 
+# Linux
 base64 -w 0 Test.class > Test.txt
+
+# Mac
+base64 -b 0 Test.class > Test.txt
 ```
 
 ### 自动编译
@@ -103,7 +107,65 @@ shell.jspx
 ```
 其中`pageContext`可以替换为`request`，以实现对内存Webshell的兼容。
 
+## 解码器
+
+以 Reverse 解码器为例说明：
+
+> 该解码器的功能是将返回包的数据反转
+
+1. 编写 `AsoutputReverse.java` 内容如下:
+
+```java
+public class AsoutputReverse {
+  String res;
+
+  public AsoutputReverse(String str) {
+    // 这里编写对 str 处理的逻辑, 最后将值传给 res
+    res = new StringBuffer(str).reverse().toString();
+  }
+
+  // 请保持 toString 方法, 不要修改内容
+  @Override
+  public String toString() {
+    return res;
+  }
+}
+```
+
+2. 编译，并获取 .class 文件 base64 后的内容
+
+```
+$ javac AsoutputReverse.java
+$ base64 AsoutputReverse.class
+```
+
+3. 打开 AntSword 进入编码设置，创建「解码器」，内容如下:
+
+```
+/**
+ * JSP::reverse 解码器
+ */
+
+ 'use strict';
+
+ module.exports = {
+   asoutput: () => {
+     // 这里是你的 .class 文件的 base64 后的内容
+     return `yv66vgAAADMAHgoACAATBwAUCgACABUKAAIAFgoAAgAXCQAHABgHA...`;
+   },
+   decode_buff: (data) => {
+     // 这里是解返回包的逻辑
+     return Buffer.from(data).reverse();
+   }
+ }
+```
+
+
 ## 更新日志
+
+### v 1.5-dev
+
+1. 支持解码器(反回包加密)
 
 ### v 1.4
 

