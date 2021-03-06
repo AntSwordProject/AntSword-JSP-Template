@@ -136,7 +136,7 @@ public class AsoutputReverse {
 
 ```
 $ javac AsoutputReverse.java
-$ base64 AsoutputReverse.class
+$ base64 -w 0 AsoutputReverse.class
 ```
 
 3. 打开 AntSword 进入编码设置，创建「解码器」，内容如下:
@@ -165,7 +165,7 @@ $ base64 AsoutputReverse.class
 
 ### v 1.5-dev
 
-1. 支持解码器(反回包加密)
+1. 支持解码器(返回包加密)
 
 ### v 1.4
 

