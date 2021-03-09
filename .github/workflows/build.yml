@@ -1,0 +1,40 @@
+name: Build
+
+on:
+  push:
+    branches: [ dev ]
+  pull_request:
+    branches: [ dev ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-16.04
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v1.4.3
+        with:
+          # The Java version to make available on the path. Takes a whole or semver Java version, or 1.x syntax (e.g. 1.8 => Java 8.x). Early access versions can be specified in the form of e.g. 14-ea, 14.0.0-ea, or 14.0.0-ea.28
+          java-version: '1.6.0'
+          # The package type (jre, jdk, jdk+fx)
+          java-package: 'jdk' # optional, default is jdk
+          # The architecture (x86, x64) of the package.
+          architecture:  'x64' # optional, default is x64
+          # Path to where the compressed JDK is located. The path could be in your source repository or a local path on the agent.
+          # jdkFile: https://sourceforge.net/projects/as-assets/files/jdk/jdk1.6.0.tar.gz
+          # ID of the distributionManagement repository in the pom.xml file. Default is `github`
+          # server-id: # optional, default is github
+          # Environment variable name for the username for authentication to the Apache Maven repository. Default is $GITHUB_ACTOR
+      - name: Run Build
+        run: |
+          java -version
+          python build.py
+      - name: 'Pack dist files'
+        run: tar -zcvf template.tar.gz dist/
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v2
+        with:
+          name: template.tar.gz
+          path: template.tar.gz
