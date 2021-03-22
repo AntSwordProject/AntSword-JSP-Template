@@ -1,5 +1,7 @@
 package filemanager;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -93,8 +95,11 @@ public class Dir {
 
             sQ = l[i].canRead() ? "R" : "-";
             sQ += l[i].canWrite() ? "W" : "-";
-            sQ += l[i].canExecute() ? "X" : "-";
-
+            try {
+                sQ +=  ((Boolean) l[i].getClass().getMethod("canExecute").invoke(l[i])) ? "X" : "-";
+            }catch (Exception e) {
+                sQ += "-";
+            }
             String nm = l[i].getName();
             if (l[i].isDirectory()) {
                 s += nm + "/\t" + sT + "\t" + l[i].length() + "\t" + sQ + "\n";

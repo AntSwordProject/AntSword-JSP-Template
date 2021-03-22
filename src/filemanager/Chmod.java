@@ -84,32 +84,32 @@ public class Chmod {
             int permissions = Integer.parseInt(permstr, 8);
             File f = new File(path);
             if ((permissions & 256) > 0) {
-                f.setReadable(true, true);
+                f.getClass().getDeclaredMethod("setReadable").invoke(f, true, true);
             }
             if ((permissions & 128) > 0) {
-                f.setWritable(true, true);
+                f.getClass().getDeclaredMethod("setWritable").invoke(f, true, true);
             }
 
             if ((permissions & 64) > 0) {
-                f.setExecutable(true, true);
+                f.getClass().getDeclaredMethod("setExecutable").invoke(f, true, true);
             }
             if ((permissions & 32) > 0) {
-                f.setReadable(true, false);
+                f.getClass().getDeclaredMethod("setReadable").invoke(f, true, false);
             }
             if ((permissions & 16) > 0) {
-                f.setWritable(true, false);
+                f.getClass().getDeclaredMethod("setWritable").invoke(f, true, false);
             }
             if ((permissions & 8) > 0) {
-                f.setExecutable(true, false);
+                f.getClass().getDeclaredMethod("setExecutable").invoke(f, true, false);
             }
             if ((permissions & 4) > 0) {
-                f.setReadable(true, false);
+                f.getClass().getDeclaredMethod("setReadable").invoke(f, true, false);
             }
             if ((permissions & 2) > 0) {
-                f.setWritable(true, false);
+                f.getClass().getDeclaredMethod("setWritable").invoke(f, true, false);
             }
             if ((permissions & 1) > 0) {
-                f.setExecutable(true, false);
+                f.getClass().getDeclaredMethod("setExecutable").invoke(f, true, false);
             }
         } catch (Exception e) {
             return "0";
