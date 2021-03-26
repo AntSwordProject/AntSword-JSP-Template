@@ -1,11 +1,12 @@
-# AntSword-JSP-Template  v1.4
+# AntSword-JSP-Template  v1.5
+
 中国蚁剑JSP一句话Payload
 
 详细介绍：https://yzddmr6.tk/posts/antsword-diy-3/
 
-编译环境：jdk6 + tomcat7
+编译环境：jdk1.5 + tomcat5
 
-适用范围：jdk6及以上
+适用范围：jdk1.5 及以上
 
 ## 编译
 
@@ -175,9 +176,12 @@ $ base64 -w 0 AsoutputReverse.class
 
 ## 更新日志
 
-### v 1.5-dev
+### v1.5
 
 1. 支持解码器(返回包加密)
+2. 修复base64编码问题&改正错别字
+3. 修改获取当前目录的方式
+4. 兼容 JDK 1.5
 
 ### v 1.4
 
