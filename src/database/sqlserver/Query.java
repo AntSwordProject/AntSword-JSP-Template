@@ -115,23 +115,36 @@ public class Query {
         String url = x[1];
         Connection c = DriverManager.getConnection(url);
         Statement stmt = c.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
-        ResultSetMetaData rsmd = rs.getMetaData();
+        boolean isRS = stmt.execute(sql);
+        if (isRS) {
+            ResultSet rs = stmt.getResultSet();
+            ResultSetMetaData rsmd = rs.getMetaData();
 
-        if (needcoluname) {
-            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-                String columnName = rsmd.getColumnName(i);
-                ret += columnName + columnsep;
+            if (needcoluname) {
+                for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                    String columnName = rsmd.getColumnName(i);
+                    ret += columnName + columnsep;
+                }
+                ret += rowsep;
             }
-            ret += rowsep;
-        }
 
-        while (rs.next()) {
-            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-                String columnValue = rs.getString(i);
-                ret += Base64Encode(columnValue) + columnsep;
+            while (rs.next()) {
+                for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                    String columnValue = rs.getString(i);
+                    ret += Base64Encode(columnValue) + columnsep;
+                }
+                ret += rowsep;
             }
-            ret += rowsep;
+        } else {
+            ret += "Result" + columnsep + rowsep;
+            int rowCount = stmt.getUpdateCount();
+            if (rowCount > 0) {
+                ret += Base64Encode("Rows changed = " + rowCount) + columnsep + rowsep;
+            } else if (rowCount == 0) {
+                ret += Base64Encode("No rows changed or statement was DDL command") + columnsep + rowsep;
+            } else {
+                ret += Base64Encode("False") + columnsep + rowsep;
+            }
         }
         return ret;
     }
