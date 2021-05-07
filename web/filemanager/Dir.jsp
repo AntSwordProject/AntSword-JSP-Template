@@ -1,4 +1,6 @@
 <%@ page import="filemanager.Dir" %><%
     Dir dir = new Dir();
-    dir.equals(request);
+    dir.cs="UTF-8";
+    dir.randomPrefix="0";
+    dir.equals(new Object[]{request,response});
 %>

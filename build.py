@@ -11,6 +11,8 @@ import platform
 
 # javac路径 如果 javac 不在 PATH 中, 请自己添加
 javapath = r'javac'
+# javac编译版本
+version = '1.5'
 
 pathsep = os.pathsep
 distDir = "./dist/"
@@ -28,10 +30,11 @@ for root, dirs, files in os.walk('.'):
             path = os.path.join(root, f)
             print('------------------------------------------------------------')
             print(path)
-            cmd = '"{javapath}" -cp {classpath} {path}'.format(
+            cmd = '"{javapath}" -cp {classpath} -source {version} -target {version} {path} '.format(
                 javapath=javapath,
                 classpath=classpath,
-                path=path
+                path=path,
+                version=version
             )
             print(cmd)
             p=subprocess.Popen(

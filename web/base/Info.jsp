@@ -1,4 +1,6 @@
 <%@ page import="base.Info" %><%
     Info info = new Info();
-    info.equals(request);
+    info.cs="UTF-8";
+//    info.equals(request);
+    info.equals(new Object[]{request,response});
 %>
