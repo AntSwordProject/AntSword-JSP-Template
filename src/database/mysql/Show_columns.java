@@ -91,7 +91,7 @@ public class Show_columns {
     String showColumns(String encode, String conn, String dbname, String table) throws Exception {
         String columnsep = "\t";
         String rowsep = "";
-        String sql = "select * from " + dbname + "." + table + " limit 0,0";
+        String sql = "select * from `" + dbname + "`.`" + table + "` limit 0,0";
         return executeSQL(encode, conn, sql, columnsep, rowsep, true);
     }
 

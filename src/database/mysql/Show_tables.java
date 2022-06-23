@@ -88,7 +88,7 @@ public class Show_tables {
     }
 
     String showTables(String encode, String conn, String dbname) throws Exception {
-        String sql = "show tables from " + dbname;
+        String sql = "show tables from `" + dbname + "`";
         String columnsep = "\t";
         String rowsep = "";
         return executeSQL(encode, conn, sql, columnsep, rowsep, false);

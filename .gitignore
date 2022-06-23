@@ -5,3 +5,5 @@ dist/*
 out/
 output/
 test*.py
+.java-version
+.python-version
