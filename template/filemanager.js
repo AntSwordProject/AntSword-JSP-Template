@@ -68,5 +68,10 @@ module.exports = (arg1, arg2, arg3) => ({
     _: '###Wget###',
     [arg1]: '#{newbase64::url}',
     [arg2]: '#{newbase64::path}'
-  }
+  },
+
+  filehash: {
+    _: '###Filehash###',
+    [arg1]: '#{newbase64::path}',
+  },
 })
