@@ -4,9 +4,9 @@
 
 详细介绍：https://yzddmr6.tk/posts/antsword-diy-3/
 
-编译环境：jdk1.5 + tomcat5
+编译环境：jdk1.5 
 
-适用范围：jdk1.5 及以上
+适用范围：jdk>=1.5
 
 ## 编译
 
@@ -15,7 +15,7 @@
 * Windows
 
 ```
-javac.exe -cp "./lib/servlet-api.jar;./lib/jsp-api.jar" Test.java
+javac.exe Test.java
 
 base64 -w 0 Test.class > Test.txt
 ```
@@ -23,7 +23,7 @@ base64 -w 0 Test.class > Test.txt
 * Linux/Mac
 
 ```bash
-javac -cp "./lib/servlet-api.jar:./lib/jsp-api.jar" Test.java
+javac Test.java
 
 # Linux
 base64 -w 0 Test.class > Test.txt
@@ -37,7 +37,11 @@ base64 -b 0 Test.class > Test.txt
 在build.py中替换你的javac路径后运行，即可在`./dist`目录下自动生成代码模板。
 
 ```
+#python2
 python build.py
+
+#python3
+python3 build3.py
 ```
 
 编译完成后将`./dist/`目录下所有文件拷贝至`antSword-master/source/core/jsp/template/`下即可
@@ -190,6 +194,12 @@ $ base64 -w 0 AsoutputReverse.class
 ```
 
 ## 更新日志
+
+### v 1.7
+
+1. 修复mysql表名含有特殊字符时出错的问题
+2. 增加文件hash功能
+3. 支持Tomcat10，去掉对第三方库的依赖
 
 ### v 1.6
 
