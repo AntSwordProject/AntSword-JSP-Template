@@ -7,7 +7,7 @@
     <groupId>com.yzddmr6</groupId>
     <artifactId>AntSword-JSP-Template</artifactId>
     <version>1.0</version>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
 
     <name>AntSword-JSP-Template</name>
     <url>https://github.com/AntSwordProject/AntSword-JSP-Template</url>

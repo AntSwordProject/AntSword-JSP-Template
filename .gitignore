@@ -4,7 +4,7 @@
 dist/*
 out/
 output/
-test*.py
+test*
 .java-version
 .python-version
 target/

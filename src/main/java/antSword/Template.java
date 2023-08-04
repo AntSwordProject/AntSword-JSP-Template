@@ -3,17 +3,22 @@ package antSword;
 import java.lang.reflect.Field;
 
 public class Template {
-    public Object request = null;
-    public Object response = null;
-    public String encoder = "base64";
-    public String cs = "antswordCharset";
-    public String randomPrefix = "antswordrandomPrefix";
+    public Object request;
+    public Object response;
+    public String encoder;
+    public String cs;
+    public String randomPrefix;
     public String decoderClassdata;
-    public String tag_s = "->|";
-    public String tag_e = "|<-";
+    public String tag_s;
+    public String tag_e;
 
     @Override
     public boolean equals(Object obj) {
+        encoder = "base64";
+        cs = "antswordCharset";
+        randomPrefix = "antswordrandomPrefix";
+        tag_s = "->|";
+        tag_e = "|<-";
         this.parseObj(obj);
         StringBuffer output = new StringBuffer();
 

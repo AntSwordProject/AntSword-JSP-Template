@@ -34,15 +34,7 @@ base64 -b 0 Test.class > Test.txt
 
 ### 自动编译
 
-在build.py中替换你的javac路径后运行，即可在`./dist`目录下自动生成代码模板。
-
-```
-#python2
-python build.py
-
-#python3
-python3 build3.py
-```
+idea打开项目，运行Main.java
 
 编译完成后将`./dist/`目录下所有文件拷贝至`antSword-master/source/core/jsp/template/`下即可
 

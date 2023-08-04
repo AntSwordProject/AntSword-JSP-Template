@@ -102,7 +102,7 @@ public class Utils {
         // Step 5: 将目标类保存到文件中或加载到内存中
         classB.getClassFile().setVersionToJava5();
 
-//            classB.writeFile("./tmpClass"); // 将目标类保存到文件中，也可以使用 toClass() 将目标类加载到内存中
+        classB.writeFile("./testclass"); // 将目标类保存到文件中，也可以使用 toClass() 将目标类加载到内存中
 
         byte[] bytes = classB.toBytecode();
         String s = new String(Base64.getEncoder().encode(bytes));
