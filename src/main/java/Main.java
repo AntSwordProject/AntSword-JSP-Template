@@ -1,11 +1,43 @@
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 import static antSword.Utils.*;
 
 public class Main {
+    public static String[] classNames =
+            {
+                    "base.Info",
+                    "base.Probedb",
+                    "command.Exec",
+                    "command.Listcmd",
+                    "database.mysql.Query",
+                    "database.mysql.Show_columns",
+                    "database.mysql.Show_databases",
+                    "database.mysql.Show_tables",
+                    "database.oracle.Query",
+                    "database.oracle.Show_columns",
+                    "database.oracle.Show_databases",
+                    "database.oracle.Show_tables",
+                    "database.sqlserver.Query",
+                    "database.sqlserver.Show_columns",
+                    "database.sqlserver.Show_databases",
+                    "database.sqlserver.Show_tables",
+                    "filemanager.Chmod",
+                    "filemanager.Copy",
+                    "filemanager.Create_file",
+                    "filemanager.Delete",
+                    "filemanager.Dir",
+                    "filemanager.Download_file",
+                    "filemanager.Filehash",
+                    "filemanager.Mkdir",
+                    "filemanager.Read_file",
+                    "filemanager.Rename",
+                    "filemanager.Retime",
+                    "filemanager.Upload_file",
+                    "filemanager.Wget",
+                    "other.PortScan",
+                    "other.RedisConn"
+            };
 
     public static void main(String[] args) throws Exception {
 
@@ -16,31 +48,17 @@ public class Main {
         //输出模板目录
         String outputDir = new File("").getAbsolutePath() + File.separator + "dist";
 
-        List<String> classNames = new ArrayList<>();
-        File directory = new File(baseDir);
         copyDirectory(Paths.get(tplDir), Paths.get(outputDir));
 
-        // Check if the directory exists and is a directory
-        if (!directory.exists() || !directory.isDirectory()) {
-            System.out.println("[-] Invalid directory path: " + baseDir);
-        }
-
-        // Recursively search for .class files in the directory
-        findClassesRecursive(directory, "", classNames);
-
-        if (classNames.isEmpty()) {
-            System.out.println("[-] No class files found in the directory.");
-        } else {
-            System.out.println("[+] Found classes in the directory:");
-            for (String className : classNames) {
-                System.out.println("Start to process class: "+className);
-                Class<?> clz = Class.forName(className);
-                String payload = genPayload(className);
-                replaceJsTemplate(clz, payload, outputDir);
-                System.out.println("[+] Generate template Success! :" + className);
-                System.out.println("*********************************************************************************************");
-            }
+        for (String className : classNames) {
+            System.out.println("Start to process class: " + className);
+            Class<?> clz = Class.forName(className);
+            String payload = genPayload(className, false);
+            replaceJsTemplate(clz.getPackage().getName(), clz.getSimpleName(), payload, outputDir);
+            System.out.println("[+] Generate template Success! :" + className);
+            System.out.println("*********************************************************************************************");
         }
     }
+
 
 }

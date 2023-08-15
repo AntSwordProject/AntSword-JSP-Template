@@ -6,8 +6,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.SecureRandom;
 import java.util.Base64;
-import java.util.List;
+import java.util.Random;
 
 public class Utils {
     public static void copyDirectory(Path sourceDir, Path targetDir) throws IOException {
@@ -38,32 +39,8 @@ public class Utils {
         });
     }
 
-    public static void findClassesRecursive(File directory, String packageName, List<String> classNames) {
-        File[] files = directory.listFiles();
-        if (files == null) {
-            return;
-        }
 
-        for (File file : files) {
-            if (file.isDirectory()) {
-                // Recurse into subdirectories with updated package name
-                String newPackageName = packageName.isEmpty() ? file.getName() : packageName + "." + file.getName();
-                findClassesRecursive(file, newPackageName, classNames);
-            } else if (file.getName().endsWith(".class")) {
-                // Remove the ".class" extension and add the class name to the list
-                String className = file.getName().replace(".class", "");
-                String fullName = packageName.isEmpty() ? className : packageName + "." + className;
-                if (fullName.startsWith("antSword.") || fullName.equals("Main")) { // 排除工具类
-                    continue;
-                }
-                classNames.add(fullName);
-            }
-        }
-    }
-
-    public static void replaceJsTemplate(Class clz, String base64Payload, String outputDir) throws Exception {
-        String packageName = clz.getPackage().getName();
-        String className = clz.getSimpleName();
+    public static void replaceJsTemplate(String packageName, String className, String base64Payload, String outputDir) throws Exception {
         String jsFileName;
         File jsFile;
         if (packageName.startsWith("database")) {
@@ -86,7 +63,40 @@ public class Utils {
         }
     }
 
-    public static String genPayload(String className) throws Exception {
+
+    public static String getRandomString(int length) {
+        String str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        Random random = new Random();
+        StringBuffer sb = new StringBuffer();
+
+        for (int i = 0; i < length; ++i) {
+            int number = random.nextInt(62);
+            sb.append(str.charAt(number));
+        }
+
+        return sb.toString();
+    }
+
+    public static String getRandomAlpha(int length) {
+        String str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        Random random = new Random();
+        StringBuffer sb = new StringBuffer();
+
+        for (int i = 0; i < length; ++i) {
+            int number = random.nextInt(52);
+            sb.append(str.charAt(number));
+        }
+
+        return sb.toString();
+    }
+
+    public static String getWhatever() {
+        int randStringLength = (new SecureRandom()).nextInt(3000);
+        String randString = getRandomString(randStringLength);
+        return randString;
+    }
+
+    public static String genPayload(String className, boolean randomName) throws Exception {
         // Step 1: 创建 ClassPool
         ClassPool pool = ClassPool.getDefault();
 
@@ -102,7 +112,14 @@ public class Utils {
         // Step 5: 将目标类保存到文件中或加载到内存中
         classB.getClassFile().setVersionToJava5();
 
-        classB.writeFile("./testclass"); // 将目标类保存到文件中，也可以使用 toClass() 将目标类加载到内存中
+        if (randomName) {
+            String originClassName = classB.getName();
+            String randomClassName = "antsword." + getRandomAlpha(5) + "." + getRandomAlpha(6);
+            classB.setName(randomClassName);
+            System.out.println("[+] Modify Class Name: " + originClassName + " -> " + randomClassName);
+        }
+
+        classB.writeFile("./testclass/"); // 将目标类保存到文件中
 
         byte[] bytes = classB.toBytecode();
         String s = new String(Base64.getEncoder().encode(bytes));
