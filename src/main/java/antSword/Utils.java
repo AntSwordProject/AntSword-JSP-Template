@@ -4,6 +4,7 @@ import javassist.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.SecureRandom;
@@ -106,8 +107,14 @@ public class Utils {
         // Step 3: 新建目标类 ClassB
         CtClass classB = pool.makeClass(classA.getName());
 
-        // Step 4: 复制 ClassA 及其继承链的方法和属性到 ClassB
-        copyInheritedMembers(classA, classB);
+        if (antSword.Template.class.isAssignableFrom(Class.forName(className))) {
+            // Step 4: 如果是模板的子类，则复制 ClassA 及其继承链的方法和属性到 ClassB
+            copyInheritedMembers(classA, classB);
+        } else {
+            // 否则直接返回classA
+            classB = classA;
+            System.out.println("[+] Not Extend Template: " + className);
+        }
 
         // Step 5: 将目标类保存到文件中或加载到内存中
         classB.getClassFile().setVersionToJava5();
@@ -129,7 +136,7 @@ public class Utils {
     }
 
     public static void copyInheritedMembers(CtClass sourceClass, CtClass targetClass)
-            throws NotFoundException, CannotCompileException {
+            throws Exception {
         // 复制源类的方法
         CtMethod[] methods = sourceClass.getDeclaredMethods();
         for (CtMethod method : methods) {
@@ -154,7 +161,21 @@ public class Utils {
             } catch (Exception e) {
                 CtField copiedField = new CtField(field.getType(), field.getName(), targetClass);
                 copiedField.setModifiers(field.getModifiers());
-                targetClass.addField(copiedField);
+                //复制属性的值
+                Class<?> aClass = Class.forName(sourceClass.getName());
+                Field declaredField = aClass.getDeclaredField(field.getName());
+                declaredField.setAccessible(true);
+                Object value = declaredField.get(aClass.newInstance());
+                if (value instanceof String) { // String
+                    System.out.println("  [+] Copying field value: " + value);
+                    targetClass.addField(copiedField, CtField.Initializer.constant((String) value));
+                } else if (value instanceof Integer) { // int
+                    System.out.println("  [+] Copying field value: " + value);
+                    targetClass.addField(copiedField, CtField.Initializer.constant((int) value));
+                } else {
+                    targetClass.addField(copiedField);
+
+                }
             }
         }
 
