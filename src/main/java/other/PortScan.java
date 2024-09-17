@@ -8,8 +8,8 @@ import java.net.Socket;
 public class PortScan extends Template {
     @Override
     public String run() throws Exception {
-        String z1 = getParam("antswordargip");
-        String z2 = getParam("antswordargports");
+        String z1 = new String(this.Base64DecodeToByte("antswordargip"), this.cs);
+        String z2 = new String(this.Base64DecodeToByte("antswordargports"), this.cs);
         return Scan(z1, z2);
 
     }

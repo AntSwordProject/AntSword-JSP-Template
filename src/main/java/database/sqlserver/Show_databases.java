@@ -7,8 +7,8 @@ import java.sql.*;
 public class Show_databases extends Template {
     @Override
     public String run() throws Exception {
-        String z1 = getParam("antswordargencode");
-        String z2 = getParam("antswordargconn");
+        String z1 = new String(this.Base64DecodeToByte("antswordargencode"), this.cs);
+        String z2 = new String(this.Base64DecodeToByte("antswordargconn"), this.cs);
         return showDatabases(z1, z2);
 
     }

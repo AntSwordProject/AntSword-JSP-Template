@@ -13,8 +13,8 @@ import java.net.SocketTimeoutException;
 public class RedisConn extends Template {
     @Override
     public String run() throws Exception {
-        String z1 = getParam("antswordargaddr");
-        String z2 = getParam("antswordargcontext");
+        String z1 = new String(this.Base64DecodeToByte("antswordargaddr"), this.cs);
+        String z2 = new String(this.Base64DecodeToByte("antswordargcontext"), this.cs);
         return SendData(z1, z2);
 
     }

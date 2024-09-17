@@ -7,7 +7,7 @@ import java.io.File;
 public class Listcmd extends Template {
     public String run() throws Exception {
 
-        String z1 = getParam("antswordargbinarr");
+        String z1 = new String(this.Base64DecodeToByte("antswordargbinarr"), this.cs);
         return ListcmdCode(z1);
     }
 

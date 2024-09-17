@@ -8,10 +8,10 @@ public class Show_columns extends Template {
 
     @Override
     public String run() throws Exception {
-        String z1 = getParam("antswordargbin");
-        String z2 = getParam("antswordargcmd");
-        String z3 = getParam("antswordargdb");
-        String z4 = getParam("antswordargtable");
+        String z1 = new String(this.Base64DecodeToByte("antswordargbin"), this.cs);
+        String z2 = new String(this.Base64DecodeToByte("antswordargcmd"), this.cs);
+        String z3 = new String(this.Base64DecodeToByte("antswordargdb"), this.cs);
+        String z4 = new String(this.Base64DecodeToByte("antswordargtable"), this.cs);
         return showColumns(z1, z2, z3, z4);
     }
 

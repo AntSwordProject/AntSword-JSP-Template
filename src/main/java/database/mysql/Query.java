@@ -9,9 +9,9 @@ public class Query extends Template {
     @Override
     public String run() throws Exception {
 
-        String z1 = getParam("antswordargencode");
-        String z2 = getParam("antswordargconn");
-        String z3 = getParam("antswordargsql");
+        String z1 = new String(this.Base64DecodeToByte("antswordargencode"), this.cs);
+        String z2 = new String(this.Base64DecodeToByte("antswordargconn"), this.cs);
+        String z3 = new String(this.Base64DecodeToByte("antswordargsql"), this.cs);
         return query(z1, z2, z3);
 
     }

